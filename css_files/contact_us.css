@@ -1,0 +1,50 @@
+body {
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  margin-left: 50px;
+  margin-top: 10px;
+  padding-bottom: 380px;
+  overflow: hidden;
+}
+
+img {
+  width: 20px;
+  aspect-ratio: 3/2;
+  object-fit: contain;
+  mix-blend-mode: color-burn;
+}
+
+img:hover {
+  scale: 1.1;
+  transition: 0.8s ease;
+  rotate: -8deg;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+
+a:hover {
+  color: gray;
+  scale: 1.1;
+}
+
+@media screen and (max-width: 540px) {
+  img {
+    display: none;
+  }
+}
+
+.contact p {
+  font-size: large;
+}
+
+.contact-img {
+  width: 400px;
+  float: right;
+}
+
+.icon {
+  height: 20px;
+  width: 20px;
+}
