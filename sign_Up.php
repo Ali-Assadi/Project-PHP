@@ -67,7 +67,7 @@ usort($sortedUsers, function ($a, $b) {
         }
 
         .container {
-            width: 510px;
+            width: 530px;
             margin: 0 auto;
             margin-top: 100px;
             background: #fff;
