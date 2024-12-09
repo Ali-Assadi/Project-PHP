@@ -10,6 +10,8 @@ if (!isset($_SESSION['users'])) {
         'lastname' => 'abi',
         'email' => 'test1@example.com',
         'phone' => '1234567890',
+        'password' => 'password1',  // Added password for test1
+        'failed_attempts' => 0 // Default failed attempts for test1
     ];
     $_SESSION['users'][1] = [
         'username' => 'test2',
@@ -17,6 +19,8 @@ if (!isset($_SESSION['users'])) {
         'lastname' => 'bahbhan',
         'email' => 'test2@example.com',
         'phone' => '0987654321',
+        'password' => 'password2',  // Added password for test2
+        'failed_attempts' => 0 // Default failed attempts for test2
     ];
 }
 
@@ -28,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
         'lastname' => htmlspecialchars($_POST['lastname']),
         'email' => htmlspecialchars($_POST['email']),
         'phone' => htmlspecialchars($_POST['phone']),
+        'password' => htmlspecialchars($_POST['password']), // Added password field
+        'failed_attempts' => 0 // Initialize failed attempts for new users
     ];
 
     // Find the first empty spot in the array to insert the new user
@@ -88,7 +94,8 @@ usort($sortedUsers, function ($a, $b) {
         }
 
         input[type="text"],
-        input[type="email"] {
+        input[type="email"],
+        input[type="password"] {
             width: 80%;
             padding: 10px;
             margin: 10px auto;
@@ -169,6 +176,7 @@ usort($sortedUsers, function ($a, $b) {
             <input type="text" name="lastname" required placeholder="Last Name" />
             <input type="email" name="email" required placeholder="Email" />
             <input type="text" name="phone" required placeholder="Phone Number" />
+            <input type="password" name="password" required placeholder="Password" /> <!-- Password input -->
             <input type="submit" value="Sign Up" />
         </form>
 
@@ -191,7 +199,7 @@ usort($sortedUsers, function ($a, $b) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($sortedUsers as $username => $user): ?>
+                    <?php foreach ($sortedUsers as $user): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($user['username']); ?></td>
                             <td><?php echo htmlspecialchars($user['firstname']); ?></td>
