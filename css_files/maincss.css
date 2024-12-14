@@ -116,6 +116,7 @@ footer {
 .button {
   display: inline-block;
   padding: 12px 24px;
+  width: 140px;
   margin: 23px;
   background:  linear-gradient(-135deg, rgb(60, 54, 35), rgb(150, 135, 109));
   color: #f5f5f5;
