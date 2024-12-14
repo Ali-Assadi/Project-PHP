@@ -7,7 +7,7 @@
 }
 
 body {
-  background: linear-gradient(135deg, #2b2b2b, #3d3d3d);
+  background: black;
   color: #f5f5f5;
   min-height: 100vh;
   display: grid;
@@ -105,7 +105,7 @@ iframe {
 /* Footer Styling */
 footer {
   grid-column: 1 / -1;
-  background: linear-gradient(90deg, #444, #222);
+  background:   linear-gradient(-135deg, rgb(46, 42, 28), rgb(82, 74, 61));
   color: #f5f5f5;
   text-align: center;
   padding: 10px 0;
