@@ -20,4 +20,4 @@
             <button class="button button6">Contact Us</button>
           </a>
         </div>
-      </div>
+</div>

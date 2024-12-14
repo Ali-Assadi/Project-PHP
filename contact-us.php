@@ -20,6 +20,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us</title>
 <style>
+/* Body Scrollbar Styling */
+body {
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  margin-left: 50px;
+  margin-top: 10px;
+  overflow-y: scroll; /* Ensure scroll is visible when content exceeds */
+}
+
+body::-webkit-scrollbar {
+  width: 12px; /* Scrollbar width */
+}
+
+body::-webkit-scrollbar-track {
+  background: rgba(104, 93, 61, 0.2); /* Track background */
+  border-radius: 10px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: rgb(104, 93, 61); /* Thumb color */
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.6); /* Space around thumb */
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgb(63, 58, 42); /* Darker thumb on hover */
+}
+
+/* Contact Form Scrollbar Styling */
+.contact-form {
+  position: relative;
+  right: 34%;
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 30px auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
+  overflow-y: auto; /* Enable scrolling if content exceeds form box */
+  max-height: 500px; /* Set a max height for the form box */
+}
+
+.contact-form::-webkit-scrollbar {
+  width: 10px; /* Scrollbar width for form */
+}
+
+.contact-form::-webkit-scrollbar-track {
+  background: rgba(104, 93, 61, 0.1); /* Track background */
+  border-radius: 10px;
+}
+
+.contact-form::-webkit-scrollbar-thumb {
+  background: rgb(63, 58, 42); /* Thumb color for contact form */
+  border-radius: 10px;
+}
+
+.contact-form::-webkit-scrollbar-thumb:hover {
+  background: rgb(104, 93, 61); /* Darker thumb on hover */
+}
+
+/* Smooth scrolling behavior */
+html {
+  scroll-behavior: smooth; /* Smooth scroll effect */
+}
+
+/* Custom Scrollbars for All Browsers */
+* {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgb(104, 93, 61) rgba(104, 93, 61, 0.2); /* Firefox */
+}
+
+/* Base styles */
 body {
   background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
   margin-left: 50px;
@@ -87,10 +159,9 @@ a:hover {
   width: 95%;
   padding: 10px;
   margin-bottom: 15px;
-  
   border: none;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(212, 212, 212, 0.9);
   box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
   font-size: 1rem;
 }
@@ -136,6 +207,7 @@ a:hover {
     width: 90%;
   }
 }
+
 
 </style>
 </head>

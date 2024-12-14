@@ -10,8 +10,8 @@ if (!isset($_SESSION['users'])) {
         'lastname' => 'abi',
         'email' => 'test1@example.com',
         'phone' => '1234567890',
-        'password' => 'password1',  // Added password for test1
-        'failed_attempts' => 0 // Default failed attempts for test1
+        'password' => 'password1',
+        'failed_attempts' => 0
     ];
     $_SESSION['users'][1] = [
         'username' => 'test2',
@@ -19,12 +19,17 @@ if (!isset($_SESSION['users'])) {
         'lastname' => 'bahbhan',
         'email' => 'test2@example.com',
         'phone' => '0987654321',
-        'password' => 'password2',  // Added password for test2
-        'failed_attempts' => 0 // Default failed attempts for test2
+        'password' => 'password2',
+        'failed_attempts' => 0
     ];
 }
 
-// Handle form submission
+// Initialize show_users session variable if it's not already set (default to false)
+if (!isset($_SESSION['show_users'])) {
+    $_SESSION['show_users'] = false;
+}
+
+// Handle form submission to add a new user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
     $newUser = [
         'username' => htmlspecialchars($_POST['username']),
@@ -32,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
         'lastname' => htmlspecialchars($_POST['lastname']),
         'email' => htmlspecialchars($_POST['email']),
         'phone' => htmlspecialchars($_POST['phone']),
-        'password' => htmlspecialchars($_POST['password']), // Added password field
-        'failed_attempts' => 0 // Initialize failed attempts for new users
+        'password' => htmlspecialchars($_POST['password']),
+        'failed_attempts' => 0
     ];
 
     // Find the first empty spot in the array to insert the new user
@@ -54,6 +59,14 @@ $sortedUsers = array_filter($_SESSION['users']); // Remove null values
 usort($sortedUsers, function ($a, $b) {
     return strcmp($a['firstname'], $b['firstname']);
 });
+
+// Toggle show/hide users list based on session state
+if (isset($_POST['show_users'])) {
+    $_SESSION['show_users'] = !$_SESSION['show_users'];  // Toggle visibility
+}
+
+// Check if users' list should be shown
+$showUsers = $_SESSION['show_users'];
 ?>
 
 <!DOCTYPE html>
@@ -67,7 +80,7 @@ usort($sortedUsers, function ($a, $b) {
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(-135deg, wheat, gray);
-            height: 100vh;
+            height: 100%;
             margin: 0;
             overflow: scroll;
         }
@@ -76,6 +89,7 @@ usort($sortedUsers, function ($a, $b) {
             width: 530px;
             margin: 0 auto;
             margin-top: 100px;
+            margin-bottom: 18px;
             background: #fff;
             border-radius: 15px;
             box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.1);
@@ -153,7 +167,7 @@ usort($sortedUsers, function ($a, $b) {
         button {
             position: relative;
             left: 37%;
-            background-color: #4CAF50;
+            background-color:rgb(52, 52, 52);
             color: white;
             padding: 10px 20px;
             border: none;
@@ -163,8 +177,33 @@ usort($sortedUsers, function ($a, $b) {
         }
 
         button:hover {
-            background-color: #45a049;
+            background-color:rgb(0, 0, 0);
         }
+
+        /* Custom Scrollbar Styling */
+        body::-webkit-scrollbar {
+            width: 12px;  /* Scrollbar width */
+        }
+
+        body::-webkit-scrollbar-track {
+            background: linear-gradient(-135deg, wheat, gray);  /* Scrollbar track background matching the page */
+            border-radius: 10px;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: linear-gradient(-135deg, rgb(63, 63, 63), rgb(182, 165, 132));  /* Green thumb with a gradient effect */
+            border-radius: 10px;
+            border: 3px solid rgba(0, 0, 0, 0.2);  /* Slight border around the thumb */
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(-135deg, rgb(0, 0, 0), rgb(182, 165, 132));  /* Darker green when hovered */
+        }
+
+        body::-webkit-scrollbar-corner {
+            background: transparent; /* No corner background */
+        }
+
     </style>
 </head>
 <body>
@@ -176,17 +215,19 @@ usort($sortedUsers, function ($a, $b) {
             <input type="text" name="lastname" required placeholder="Last Name" />
             <input type="email" name="email" required placeholder="Email" />
             <input type="text" name="phone" required placeholder="Phone Number" />
-            <input type="password" name="password" required placeholder="Password" /> <!-- Password input -->
+            <input type="password" name="password" required placeholder="Password" />
             <input type="submit" value="Sign Up" />
         </form>
 
-        <!-- Button to show users (always visible) -->
+        <!-- Button to toggle users list visibility -->
         <form method="post">
-            <button type="submit" name="show_users">Show All Users</button>
+            <button type="submit" name="show_users">
+                <?php echo $showUsers ? 'Hide All Users' : 'Show All Users'; ?>
+            </button>
         </form>
 
-        <!-- Display sorted users -->
-        <?php if (isset($_POST['show_users'])): ?>
+        <!-- Display sorted users if the button is clicked -->
+        <?php if ($showUsers): ?>
             <h3>Signed-Up Users (Sorted by First Name)</h3>
             <table>
                 <thead>
