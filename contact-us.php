@@ -18,8 +18,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css_files/contact_us.css">
     <title>Contact Us</title>
+<style>
+body {
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  margin-left: 50px;
+  margin-top: 10px;
+}
+
+img {
+  width: 20px;
+  aspect-ratio: 3/2;
+  object-fit: contain;
+  mix-blend-mode: color-burn;
+}
+
+img:hover {
+  scale: 1.1;
+  transition: 0.8s ease;
+  rotate: -8deg;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+
+a:hover {
+  color: gray;
+  scale: 1.1;
+}
+
+.contact p {
+  font-size: large;
+}
+
+.contact-img {
+  width: 400px;
+  float: right;
+}
+
+.icon {
+  height: 20px;
+  width: 20px;
+}
+
+/* Contact Form Styling */
+.contact-form {
+  position: relative;
+  right: 34%;
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 30px auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
+}
+
+.contact-form h2 {
+  text-align: center;
+  color: rgb(63, 58, 42);
+  margin-bottom: 20px;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 95%;
+  padding: 10px;
+  margin-bottom: 15px;
+  
+  border: none;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border: 2px solid rgb(104, 93, 61);
+  box-shadow: 0px 0px 5px rgb(104, 93, 61);
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 10px;
+  background: rgb(63, 58, 42);
+  color: wheat;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: rgb(104, 93, 61);
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 540px) {
+  img {
+    display: none;
+  }
+
+  .contact-form {
+    width: 90%;
+  }
+}
+
+</style>
 </head>
 <body>
     <div class="contact">
@@ -61,111 +179,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
-
-<style>
-body {
-  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
-  margin-left: 50px;
-  margin-top: 10px;
-  padding-bottom: 380px;
-  overflow: hidden;
-}
-
-img {
-  width: 20px;
-  aspect-ratio: 3/2;
-  object-fit: contain;
-  mix-blend-mode: color-burn;
-}
-
-img:hover {
-  scale: 1.1;
-  transition: 0.8s ease;
-  rotate: -8deg;
-}
-
-a {
-  color: black;
-  text-decoration: none;
-}
-
-a:hover {
-  color: gray;
-  scale: 1.1;
-}
-
-@media screen and (max-width: 540px) {
-  img {
-    display: none;
-  }
-}
-
-.contact p {
-  font-size: large;
-}
-
-.contact-img {
-  width: 400px;
-  float: right;
-}
-
-.icon {
-  height: 20px;
-  width: 20px;
-}
-
-/* Styles for Contact Form */
-.contact-form {
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 20px;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 500px;
-    margin-top: 40px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.contact-form h2 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.contact-form input,
-.contact-form textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 1rem;
-}
-
-.contact-form input[type="text"],
-.contact-form textarea {
-    resize: vertical;
-}
-
-.contact-form button {
-    width: 100%;
-    padding: 12px;
-    background-color: wheat;
-    color: black;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    cursor: pointer;
-}
-
-.contact-form button:hover {
-    background-color: #4cae4c;
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 600px) {
-    .contact-form {
-        width: 90%;
-    }
-}
-</style>

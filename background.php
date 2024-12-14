@@ -12,10 +12,20 @@ $cssPath = "css_files/maincss.css";
     <script src="<?= $jsPath ?>" defer></script>
     <link rel="stylesheet" href="<?= $cssPath ?>" />
     <title>Restaurant</title>
+    <style>
+      /* Inline CSS for max height and max width */
+      body {
+        max-width: 400px;
+        max-height: 400px;
+        margin: 0 auto; /* Center the body */
+        overflow: hidden; /* Prevent overflow */
+        background-size: cover;
+        background-position: center;
+      }
+    </style>
   </head>
-  <body id="restaurantBody" style="background-image: url('<?= $imagesPath ?>bg99.jpg')">   
+  <body id="restaurantBody" style="background-image: url('<?= $imagesPath ?>bg99.jpg') ">   
   </body>
 </html>
-
 
 <?php include 'backGroundScript.php'; ?>
