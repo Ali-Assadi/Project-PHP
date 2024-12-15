@@ -6,8 +6,8 @@ if (!isset($_SESSION['users'])) {
     $_SESSION['users'] = array_fill(0, 10, null);
     $_SESSION['users'][0] = [
         'username' => 'test1',
-        'firstname' => 'aban',
-        'lastname' => 'abi',
+        'firstname' => 'aka',
+        'lastname' => 'lost',
         'email' => 'test1@example.com',
         'phone' => '1234567890',
         'password' => 'password1',
@@ -15,8 +15,8 @@ if (!isset($_SESSION['users'])) {
     ];
     $_SESSION['users'][1] = [
         'username' => 'test2',
-        'firstname' => 'aabah',
-        'lastname' => 'bahbhan',
+        'firstname' => 'xnear',
+        'lastname' => 'camo',
         'email' => 'test2@example.com',
         'phone' => '0987654321',
         'password' => 'password2',

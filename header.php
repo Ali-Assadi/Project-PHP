@@ -4,12 +4,12 @@ $imagesPath = "photos/index_images/";
 
 <header class="header" style="background: linear-gradient(-135deg, rgb(63, 63, 63), rgb(182, 165, 132));">
     <!-- Login Button -->
-    <a href="signin.php" target="main" class="button">
+    <a href="signin.php" target="main" class="button" style="position: relative; right:20px;">
         Login
     </a>
     
     <!-- Sign Up Button -->
-    <a href="sign_Up.php" target="main" class="button" style="position: relative; right:120px; ">
+    <a href="sign_Up.php" target="main" class="button" style="position: relative; right:60px;">
         Sign Up
     </a>
     

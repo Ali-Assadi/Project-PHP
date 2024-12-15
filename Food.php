@@ -2,7 +2,6 @@
 // Define paths for resources
 $photosPath = "photos/food_images/";
 $cssPath = "css_files/product.css";
-$jsPath = "javascript_files/product.js";
 ?>
 
 <!DOCTYPE html>
@@ -10,7 +9,6 @@ $jsPath = "javascript_files/product.js";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="<?= $jsPath ?>"></script>
     <link rel="stylesheet" type="text/css" href="<?= $cssPath ?>" />
     <title>Food Menu</title>
   </head>
@@ -259,13 +257,14 @@ $jsPath = "javascript_files/product.js";
         }
 
         setProductName(product_name) {
-          const nameRegex = /^[A-Za-z\s'-]+$/;
+          const nameRegex = /^[A-Za-z0-9\s'-]+$/;
           if (nameRegex.test(product_name)) {
-            this.product_name = product_name;
-          } else {
-            throw new Error("Invalid product name");
-          }
+          this.product_name = product_name;
+        } else {
+        throw new Error("Invalid product name");
         }
+        }
+
 
         getProductName() {
           return this.product_name;
