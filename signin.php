@@ -42,8 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Find user by username
-    $userFound = false;
+    $userFound = false; // Tracks if the user exists
+    $passwordMatch = false; // Tracks if the password matches
+
     foreach ($_SESSION['users'] as &$user) {
         if ($user['username'] === $username) {
             $userFound = true;
@@ -52,35 +53,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user['failed_attempts'] >= 3) {
                 $lockMessage = "Your account is locked due to too many failed login attempts.";
             } else {
-                // If login is successful, reset failed attempts
+                // Check password
                 if ($user['password'] === $password) {
-                    $user['failed_attempts'] = 0;
-                    echo "<script>alert('Login successful!');</script>";  // Show alert
-                    echo "<script>window.location.href='" . htmlspecialchars($_SERVER['PHP_SELF']) . "';</script>"; // Ensure redirect happens after alert
-                    exit(); // Exit to stop further code execution
+                    $passwordMatch = true;
+                    $user['failed_attempts'] = 0; // Reset failed attempts
+                    echo "<script>alert('Login successful!');</script>";
+                    echo "<script>window.location.href='" . htmlspecialchars($_SERVER['PHP_SELF']) . "';</script>";
+                    exit();
                 } else {
-                    // Increment failed attempts if login is unsuccessful
                     $user['failed_attempts']++;
                     $attemptsLeft = 3 - $user['failed_attempts'];
+
                     if ($attemptsLeft > 0) {
-                        echo "<script>alert('Invalid username or password. You have $attemptsLeft attempts left.');</script>";
+                        echo "<script>alert('Invalid password. You have $attemptsLeft attempts left.');</script>";
                     } else {
                         echo "<script>alert('Your account is now locked due to too many failed attempts.');</script>";
                     }
                 }
             }
-            break;
+            break; // Break the loop after finding the user
         }
     }
 
-    // If user not found
+    // Handle case where username does not exist
     if (!$userFound) {
-        echo "<script>alert('Invalid username or password.');</script>";
+        echo "<script>alert('There is no username like this.');</script>";
     }
 }
-
-
-
 
 ?>
 

@@ -2,338 +2,123 @@
 // Define paths for resources
 $photosPath = "photos/food_images/";
 $cssPath = "css_files/product.css";
+$uploadsDir = __DIR__ . "/uploads/";
+$result = "";
+
+// Ensure uploads directory exists
+if (!is_dir($uploadsDir)) {
+    mkdir($uploadsDir, 0777, true);
+}
+
+// Create PHP array of products with explicit image paths
+$products = [
+    ['id' => 1, 'name' => 'Classic Burger', 'price' => 40, 'path' => 'classic burger.jpg'],
+    ['id' => 2, 'name' => 'Another Burger', 'price' => 75, 'path' => 'anotherBurger.jpg'],
+    ['id' => 3, 'name' => 'Yet Another Burger', 'price' => 100, 'path' => 'Yet Another Burger.jpg'],
+    ['id' => 4, 'name' => 'Chicken Burger', 'price' => 40, 'path' => 'Chicken Burger.jpg'],
+    ['id' => 5, 'name' => 'Mixed Tortia', 'price' => 60, 'path' => 'tortia.jpg'],
+    ['id' => 6, 'name' => 'Trible Taco', 'price' => 60, 'path' => 'Taco.jpg'],
+    ['id' => 7, 'name' => 'Home Pizza', 'price' => 40, 'path' => 'HomePizza.jpg'],
+    ['id' => 8, 'name' => 'Classic Pizza', 'price' => 65, 'path' => 'ClassicPizza.jpg'],
+    ['id' => 9, 'name' => 'Italic Pizza', 'price' => 70, 'path' => 'italicpizza.jpg'],
+    ['id' => 10, 'name' => 'Napilion Pizza', 'price' => 70, 'path' => 'Napilion Pizza.jpg'],
+];
+
+// Save product to file
+if (isset($_POST['productDetails'])) {
+    $productDetails = $_POST['productDetails'];
+    $fileIndex = count(glob($uploadsDir . '*.txt')) + 1;
+    $fileName = $uploadsDir . "product_$fileIndex.txt";
+    $file = fopen($fileName, 'w');
+    fwrite($file, $productDetails);
+    fclose($file);
+    $result = "Product details saved to $fileName.";
+}
+
+// Handle file comparison
+if (isset($_POST['compareFiles'])) {
+    $file1 = $_POST['file1'];
+    $file2 = $_POST['file2'];
+
+    if (file_exists($file1) && file_exists($file2)) {
+        $handle1 = fopen($file1, 'r');
+        $handle2 = fopen($file2, 'r');
+
+        $content1 = fread($handle1, filesize($file1));
+        $content2 = fread($handle2, filesize($file2));
+
+        fclose($handle1);
+        fclose($handle2);
+
+        $result = ($content1 === $content2) ? "The files are the same." : "The files are different.";
+    } else {
+        $result = "One or both files do not exist.";
+    }
+}
+
+// Handle file deletion
+if (isset($_POST['deleteAllFiles'])) {
+    foreach (glob($uploadsDir . '*.txt') as $file) {
+        unlink($file);
+    }
+    $result = "All files have been deleted.";
+}
+
+$uploadedFiles = glob($uploadsDir . '*.txt');
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="<?= $cssPath ?>" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="<?= $cssPath ?>">
     <title>Food Menu</title>
-  </head>
-  <body
-    style="background-image: url('<?= $photosPath ?>GoldBorderWallpaper.jpg');"
-  >
-  <div class="food">
-  <div class="item">
-    <img
-      src="photos/food_images/classic burger.jpg"
-      data-id="1"
-      data-name="Classic Burger"
-      data-price="40"
-      style="margin-left: 90px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 45px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/anotherBurger.jpg"
-      data-id="2"
-      data-name="Another Burger"
-      data-price="75"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 27px; margin-bottom: 140px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Yet Another Burger.jpg"
-      data-id="3"
-      data-name="Yet Another Burger"
-      data-price="100"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 35px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Chicken Burger.jpg"
-      data-id="4"
-      data-name="Chicken Burger"
-      data-price="40"
-      style="margin-left: 190px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/tortia.jpg"
-      data-id="5"
-      data-name="Mixed Tortia"
-      data-price="60"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Taco.jpg"
-      data-id="6"
-      data-name="Trible Taco"
-      data-price="60"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/HomePizza.jpg"
-      data-id="7"
-      data-name="Home Pizza"
-      data-price="40"
-      style="margin-left: 190px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/ClassicPizza.jpg"
-      data-id="8"
-      data-name="Classic Pizza"
-      data-price="65"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/italicpizza.jpg"
-      data-id="9"
-      data-name="Italic Pizza"
-      data-price="70"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Napilion Pizza.jpg"
-      data-id="10"
-      data-name="Napilion Pizza"
-      data-price="70"
-      style="margin-left: 190px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/shawrma.jpg"
-      data-id="11"
-      data-name="Shawrma"
-      data-price="50"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/baget1.jpg"
-      data-id="12"
-      data-name="Baget"
-      data-price="40"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Diet1.jpg"
-      data-id="13"
-      data-name="Diet meal 1"
-      data-price="45"
-      style="margin-left: 180px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/diet2.jpg"
-      data-id="14"
-      data-name="Diet meal 2"
-      data-price="45"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Diet3.jpg"
-      data-id="15"
-      data-name="Diet meal 3"
-      data-price="45"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/fatosh.jpg"
-      data-id="16"
-      data-name="Fatosh Salad"
-      data-price="30"
-      style="margin-left: 185px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/ArabicSalad.jpg"
-      data-id="17"
-      data-name="Arabic Salad"
-      data-price="20"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/tabola.jpg"
-      data-id="18"
-      data-name="Tabola"
-      data-price="30"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-</div>
+</head>
+<body style="background-image: url('<?= $photosPath ?>GoldBorderWallpaper.jpg');">
+    <h1>Food Menu</h1>
+    <div class="food">
+        <?php foreach ($products as $product): ?>
+            <div class="item">
+                <img src="<?= $photosPath . $product['path'] ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+                <div class="tooltip">
+                    <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>₪
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="productDetails" value="ID: <?= $product['id'] ?>, Name: <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>">
+                    <button type="submit">Save Product</button>
+                </form>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
+    <h2>Compare Files</h2>
+    <form method="POST">
+        <label for="file1">File 1:</label>
+        <select name="file1" required>
+            <option value="">Select file</option>
+            <?php foreach ($uploadedFiles as $file): ?>
+                <option value="<?= $file ?>"><?= basename($file) ?></option>
+            <?php endforeach; ?>
+        </select>
 
-    <script>
-      class Product {
-        constructor(product_id, product_name, product_price) {
-          this.setProductId(product_id);
-          this.setProductName(product_name);
-          this.setProductPrice(product_price);
-        }
+        <label for="file2">File 2:</label>
+        <select name="file2" required>
+            <option value="">Select file</option>
+            <?php foreach ($uploadedFiles as $file): ?>
+                <option value="<?= $file ?>"><?= basename($file) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <button type="submit" name="compareFiles">Compare</button>
+    </form>
 
-        setProductId(product_id) {
-          const idRegex = /^[A-Za-z0-9-]+$/;
-          if (idRegex.test(product_id)) {
-            this.product_id = product_id;
-          } else {
-            throw new Error("Invalid product ID");
-          }
-        }
+    <h2>Delete All Files</h2>
+    <form method="POST">
+        <button type="submit" name="deleteAllFiles" onclick="return confirm('Are you sure you want to delete all files?');">Delete All Files</button>
+    </form>
 
-        getProductId() {
-          return this.product_id;
-        }
-
-        setProductName(product_name) {
-          const nameRegex = /^[A-Za-z0-9\s'-]+$/;
-          if (nameRegex.test(product_name)) {
-          this.product_name = product_name;
-        } else {
-        throw new Error("Invalid product name");
-        }
-        }
-
-
-        getProductName() {
-          return this.product_name;
-        }
-
-        setProductPrice(product_price) {
-          const priceRegex = /^\d+(\.\d{1,2})?$/;
-          if (priceRegex.test(product_price.toString())) {
-            this.product_price = parseFloat(product_price);
-          } else {
-            throw new Error("Invalid product price");
-          }
-        }
-
-        getProductPrice() {
-          return this.product_price;
-        }
-
-        toString() {
-          return `${this.product_name}, Price: ${this.product_price}₪`;
-        }
-
-        calculate_total_cost(quantity) {
-          return this.product_price * quantity;
-        }
-      }
-
-      function createProducts(...attributes) {
-        const items = document.querySelectorAll(".item img");
-        const products = [];
-
-        for (const item of items) {
-          const productData = {};
-          for (const attr of attributes) {
-            productData[attr] = item.getAttribute(`data-${attr}`);
-          }
-
-          try {
-            const product = new Product(
-              productData.id,
-              productData.name,
-              parseFloat(productData.price)
-            );
-            products.push(product);
-
-            const tooltip = item.nextElementSibling;
-            if (tooltip) {
-              tooltip.textContent = `${product.getProductName()}, Price: ${product.getProductPrice()}₪`;
-            }
-          } catch (error) {
-            console.error(`Error creating product: ${error.message}`);
-          }
-        }
-
-        return products;
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const products = createProducts("id", "name", "price");
-        console.log(products);
-
-        if (products.length > 0) {
-          const totalCost = products[0].calculate_total_cost(3);
-          console.log(
-            `Total cost for 3 units of ${products[0].getProductName()}: ${totalCost}₪`
-          );
-        }
-      });
-    </script>
-
-  </body>
+    <?php if ($result): ?>
+        <script>alert("<?= $result ?>");</script>
+    <?php endif; ?>
+</body>
 </html>
