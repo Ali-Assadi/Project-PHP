@@ -1,16 +1,40 @@
 <?php
 // Handle form submission if needed
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Collect form data
-    $name = htmlspecialchars($_POST['name']);
-    $phone = htmlspecialchars($_POST['phone']);
-    $message = htmlspecialchars($_POST['message']);
-    
-    // You can now process or store this data as needed
-    // Example: sending an email, saving to a database, etc.
-    // For now, just a success message
-    $form_success = "Thank you for contacting us, we will get back to you soon!";
+  // Collect form data
+  $name = htmlspecialchars($_POST['name']);
+  $phone = htmlspecialchars($_POST['phone']);
+  $message = htmlspecialchars($_POST['message']);
+  
+  // Validation
+  $errors = [];
+  
+  // Validate name (Ensure it's not empty and contains only letters and spaces)
+  if (empty($name)) {
+      $errors[] = "Name is required.";
+  } elseif (!preg_match("/^[a-zA-Z ]*$/", $name)) {
+      $errors[] = "Name can only contain letters and spaces.";
+  }
+
+  // Validate phone number (Ensure it's exactly 10 digits)
+  if (empty($phone)) {
+      $errors[] = "Phone number is required.";
+  } elseif (!preg_match("/^\d{10}$/", $phone)) {
+      $errors[] = "Phone number must be exactly 10 digits (only numbers).";
+  }
+
+  // Validate message (Ensure it's not empty)
+  if (empty($message)) {
+      $errors[] = "Message is required.";
+  }
+
+  // If there are no errors, process the form (e.g., send email, save data, etc.)
+  if (empty($errors)) {
+      // For now, just a success message
+      $form_success = true; // Mark the form as successfully submitted
+  }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -19,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us</title>
-<style>
-/* Body Scrollbar Styling */
+    <style>
+    * Body Scrollbar Styling */
 body {
   background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
   margin-left: 50px;
@@ -209,7 +233,7 @@ a:hover {
 }
 
 
-</style>
+    </style>
 </head>
 <body>
     <div class="contact">
@@ -225,29 +249,75 @@ a:hover {
         <br><br>
         <img src="photos/contact-us_images/phoneicon.png" class="icon">
         <br><br>
-        <a href="04-20111000">04-20111000</a>
+        <a href="tel:04-20111000">04-20111000</a>
         <br><br>
         <img src="photos/contact-us_images/mailicon.png" class="icon">
         <br><br>
-        <a href="name@name.com">name@name.com</a>
+        <a href="mailto:name@name.com">name@name.com</a>
         </p>
     </div>
-    
-    <!-- Display success message if form was submitted -->
+
+    <!-- Display error messages or success message if form was submitted -->
     <?php if (isset($form_success)): ?>
         <p style="color: green; text-align: center;"><?php echo $form_success; ?></p>
+    <?php elseif (!empty($errors)): ?>
+        <ul style="color: red; text-align: center;">
+            <?php foreach ($errors as $error): ?>
+                <li><?php echo $error; ?></li>
+            <?php endforeach; ?>
+        </ul>
     <?php endif; ?>
 
     <!-- Contact Form Box -->
     <div class="contact-form">
         <h2>Send us a message</h2>
-        <form action="contact_us.php" method="post">
-            <input type="text" name="name" placeholder="Your Name" required>
-            <input type="text" name="phone" placeholder="Your Phone Number" required>
-            <textarea name="message" placeholder="Your Message" required></textarea>
+        <form action="contact_us.php" method="post" id="contactForm">
+            <input type="text" name="name" placeholder="Your Name" id="name" required>
+            <input type="text" name="phone" placeholder="Your Phone Number" id="phone" required>
+            <textarea name="message" placeholder="Your Message" id="message" required></textarea>
             <button type="submit" class="submit-btn">Submit</button>
         </form>
     </div>
 
+    <script>
+// Front-end validation using JavaScript
+document.getElementById('contactForm').addEventListener('submit', function(event) {
+    let name = document.getElementById('name').value;
+    let phone = document.getElementById('phone').value;
+    let message = document.getElementById('message').value;
+    let errors = [];
+
+    // Validate name (Ensure it's not empty and contains only letters and spaces)
+    if (!name.match(/^[a-zA-Z ]*$/)) {
+        errors.push("Name can only contain letters and spaces.");
+    }
+
+    // Validate phone number (Ensure it's exactly 10 digits and only numbers)
+    if (!phone.match(/^\d{10}$/)) {
+        errors.push("Phone number must be exactly 10 digits (only numbers).");
+    }
+
+    // Validate message (Ensure it's not empty)
+    if (message.trim() === "") {
+        errors.push("Message is required.");
+    }
+
+    // If there are errors, prevent form submission and alert the user
+    if (errors.length > 0) {
+        event.preventDefault();
+        alert(errors.join('\n'));
+    } else {
+        // If no errors, show a confirmation message
+        event.preventDefault(); // Prevent the default form submission for now
+
+        // Display a confirmation alert
+        alert("Thank you for contacting us! We will get back to you soon.");
+
+        // Redirect to the homepage (or any other URL)
+        window.top.location.href = "home.php"; // Replace with your homepage URL if needed
+    }
+});
+
+    </script>
 </body>
 </html>

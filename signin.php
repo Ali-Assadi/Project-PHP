@@ -10,8 +10,8 @@ if (!isset($_SESSION['users'])) {
             'lastname' => 'abi',
             'email' => 'test1@example.com',
             'phone' => '1234567890',
-            'password' => 'password1', 
-            'failed_attempts' => 0 // Add default failed attempts
+            'password' => 'password1',
+            'failed_attempts' => 0
         ],
         [
             'username' => 'test2',
@@ -20,47 +20,76 @@ if (!isset($_SESSION['users'])) {
             'email' => 'test2@example.com',
             'phone' => '0987654321',
             'password' => 'password2',
-            'failed_attempts' => 0 // Add default failed attempts
+            'failed_attempts' => 0
         ]
     ];
 }
 
 // Reset lock and failed attempts if reset button is clicked
 if (isset($_GET['reset']) && $_GET['reset'] === 'true') {
-    // Reset all users' failed attempts to 0
     foreach ($_SESSION['users'] as &$user) {
         $user['failed_attempts'] = 0;
     }
-    header("Location: " . htmlspecialchars($_SERVER['PHP_SELF'])); // Redirect to avoid resubmission
+    header("Location: " . htmlspecialchars($_SERVER['PHP_SELF']));
     exit();
 }
 
 // Lock message initialization
 $lockMessage = "";
+
+// Function to generate a 6-character random password with letters and numbers
+function generateRandomPassword() {
+    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    $password = '';
+    for ($i = 0; $i < 6; $i++) {
+        $password .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $password;
+}
+
+// Forgot Password Logic
+if (isset($_POST['forgotPassword'])) {
+    $username = $_POST['username'];
+    $userFound = false;
+
+    foreach ($_SESSION['users'] as &$user) {
+        if ($user['username'] === $username) {
+            $userFound = true;
+            $newPassword = generateRandomPassword();
+            $user['password'] = $newPassword;
+
+            echo "<script>alert('Your new password is: $newPassword');</script>";
+            break;
+        }
+    }
+
+    if (!$userFound) {
+        echo "<script>alert('Username not found. Please try again.');</script>";
+    }
+}
+
 // Process login attempt
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signin'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $userFound = false; // Tracks if the user exists
-    $passwordMatch = false; // Tracks if the password matches
+    $userFound = false;
+    $passwordMatch = false;
 
     foreach ($_SESSION['users'] as &$user) {
         if ($user['username'] === $username) {
             $userFound = true;
 
-            // Check if the user is locked
             if ($user['failed_attempts'] >= 3) {
                 $lockMessage = "Your account is locked due to too many failed login attempts.";
             } else {
-                // Check password
                 if ($user['password'] === $password) {
-                    $passwordMatch = true;
-                    $user['failed_attempts'] = 0; // Reset failed attempts
-                    echo "<script>alert('Login successful!');</script>";
-                    echo "<script>window.location.href='" . htmlspecialchars($_SERVER['PHP_SELF']) . "';</script>";
+                    $_SESSION['username'] = $username; // Save the username in session
+                    $user['failed_attempts'] = 0;
+                    echo "<script>alert('Login successful! Redirecting...');</script>";
+                    echo "<script>window.top.location.href='home.php';</script>";
                     exit();
-                } else {
+                }else {
                     $user['failed_attempts']++;
                     $attemptsLeft = 3 - $user['failed_attempts'];
 
@@ -71,11 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             }
-            break; // Break the loop after finding the user
+            break;
         }
     }
 
-    // Handle case where username does not exist
     if (!$userFound) {
         echo "<script>alert('There is no username like this.');</script>";
     }
@@ -103,8 +131,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
                 <input type="text" id="username" name="username" required placeholder="Username" />
                 <input type="password" id="password" name="password" required placeholder="Password" />
-                <input type="submit" value="Sign In" />
+                <input type="submit" name="signin" value="Sign In" />
             </form>
+
+            <!-- Forgot Password Section -->
+            <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" style="margin-top: 20px;">
+    <!-- Default "Forgot your password?" text -->
+    <span id="forgotPasswordText" onclick="toggleForgotPasswordForm()" style="color: black; cursor: pointer;">Forgot your password?</span>
+
+    <!-- Hidden form (initially hidden) to input username and reset password -->
+    <div id="forgotPasswordForm" style="display: none;">
+        <br />
+        <label for="forgotUsername" style="color: black;">Enter your username:</label>
+        <input type="text" id="forgotUsername" name="username" required placeholder="Username" />
+        <input type="submit" name="forgotPassword" value="Reset Password" />
+    </div>
+</form>
+<script>
+function toggleForgotPasswordForm() {
+    // Toggle the visibility of the form when the text is clicked
+    const form = document.getElementById('forgotPasswordForm');
+    form.style.display = form.style.display === 'block' ? 'none' : 'block';
+
+    // Toggle the text of the link
+    const text = document.getElementById('forgotPasswordText');
+    text.innerHTML = form.style.display === 'block' ? 'Hide Reset Password Form' : 'Forgot your password?';
+}
+</script>
+
+
         </div>
     <?php endif; ?>
 </body>
