@@ -1,114 +1,64 @@
 <?php
 session_start();
+include "db_config.php"; // Include the database connection
 
-// Initialize users array with failed attempts if it doesn't exist
-if (!isset($_SESSION['users'])) {
-    $_SESSION['users'] = [
-        [
-            'username' => 'test1',
-            'firstname' => 'aban',
-            'lastname' => 'abi',
-            'email' => 'test1@example.com',
-            'phone' => '1234567890',
-            'password' => 'password1',
-            'failed_attempts' => 0
-        ],
-        [
-            'username' => 'test2',
-            'firstname' => 'aabah',
-            'lastname' => 'bahbhan',
-            'email' => 'test2@example.com',
-            'phone' => '0987654321',
-            'password' => 'password2',
-            'failed_attempts' => 0
-        ]
-    ];
-}
-
-// Reset lock and failed attempts if reset button is clicked
-if (isset($_GET['reset']) && $_GET['reset'] === 'true') {
-    foreach ($_SESSION['users'] as &$user) {
-        $user['failed_attempts'] = 0;
-    }
-    header("Location: " . htmlspecialchars($_SERVER['PHP_SELF']));
-    exit();
-}
-
-// Lock message initialization
+// Initialize $lockMessage to avoid undefined variable warnings
 $lockMessage = "";
 
-// Function to generate a 6-character random password with letters and numbers
-function generateRandomPassword() {
-    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    $password = '';
-    for ($i = 0; $i < 6; $i++) {
-        $password .= $characters[rand(0, strlen($characters) - 1)];
-    }
-    return $password;
-}
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Safely retrieve username and password from POST
+    $username = $_POST['username'] ?? null;
+    $password = $_POST['password'] ?? null;
 
-// Forgot Password Logic
-if (isset($_POST['forgotPassword'])) {
-    $username = $_POST['username'];
-    $userFound = false;
+    if ($username && $password) {
+        // Query to fetch the user from the database
+        $stmt = $conn->prepare("SELECT id, password, failed_attempts FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    foreach ($_SESSION['users'] as &$user) {
-        if ($user['username'] === $username) {
-            $userFound = true;
-            $newPassword = generateRandomPassword();
-            $user['password'] = $newPassword;
+        if ($result && $result->num_rows > 0) {
+            $user = $result->fetch_assoc();
 
-            echo "<script>alert('Your new password is: $newPassword');</script>";
-            break;
-        }
-    }
-
-    if (!$userFound) {
-        echo "<script>alert('Username not found. Please try again.');</script>";
-    }
-}
-
-// Process login attempt
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signin'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    $userFound = false;
-    $passwordMatch = false;
-
-    foreach ($_SESSION['users'] as &$user) {
-        if ($user['username'] === $username) {
-            $userFound = true;
-
+            // Check if the account is locked
             if ($user['failed_attempts'] >= 3) {
-                $lockMessage = "Your account is locked due to too many failed login attempts.";
+                $lockMessage = "Your account is locked due to too many failed attempts. Please contact support.";
             } else {
-                if ($user['password'] === $password) {
-                    $_SESSION['username'] = $username; // Save the username in session
-                    $user['failed_attempts'] = 0;
-                    echo "<script>alert('Login successful! Redirecting...');</script>";
-                    echo "<script>window.top.location.href='home.php';</script>";
-                    exit();
-                }else {
-                    $user['failed_attempts']++;
-                    $attemptsLeft = 3 - $user['failed_attempts'];
+                // Verify the password
+                if (password_verify($password, $user['password'])) {
+                    // Reset failed attempts on successful login
+                    $resetStmt = $conn->prepare("UPDATE users SET failed_attempts = 0 WHERE id = ?");
+                    $resetStmt->bind_param("i", $user['id']);
+                    $resetStmt->execute();
 
-                    if ($attemptsLeft > 0) {
-                        echo "<script>alert('Invalid password. You have $attemptsLeft attempts left.');</script>";
-                    } else {
-                        echo "<script>alert('Your account is now locked due to too many failed attempts.');</script>";
-                    }
+                    // Set session variables
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $username;
+
+                    // Redirect to a welcome page or dashboard
+                    header("Location: welcome.php");
+                    exit();
+                } else {
+                    // Increment failed attempts
+                    $incrementStmt = $conn->prepare("UPDATE users SET failed_attempts = failed_attempts + 1 WHERE id = ?");
+                    $incrementStmt->bind_param("i", $user['id']);
+                    $incrementStmt->execute();
+
+                    echo "<p style='color: red; text-align: center;'>Invalid password. Please try again.</p>";
                 }
             }
-            break;
+        } else {
+            echo "<p style='color: red; text-align: center;'>No user found with the username provided.</p>";
         }
-    }
 
-    if (!$userFound) {
-        echo "<script>alert('There is no username like this.');</script>";
+        $stmt->close();
+    } else {
+        echo "<p style='color: red; text-align: center;'>Please enter both username and password.</p>";
     }
 }
 
+// Close the database connection
+$conn->close();
 ?>
 
 <!DOCTYPE html>

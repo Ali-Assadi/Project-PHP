@@ -1,73 +1,64 @@
 <?php
 session_start();
+include "db_config.php"; // Include the database connection
 
-// Initialize users array in session with two default users in a fixed array of size 10
-if (!isset($_SESSION['users'])) {
-    $_SESSION['users'] = array_fill(0, 10, null);
-    $_SESSION['users'][0] = [
-        'username' => 'test1',
-        'firstname' => 'aka',
-        'lastname' => 'lost',
-        'email' => 'test1@example.com',
-        'phone' => '1234567890',
-        'password' => 'password1',
-        'failed_attempts' => 0
-    ];
-    $_SESSION['users'][1] = [
-        'username' => 'test2',
-        'firstname' => 'xnear',
-        'lastname' => 'camo',
-        'email' => 'test2@example.com',
-        'phone' => '0987654321',
-        'password' => 'password2',
-        'failed_attempts' => 0
-    ];
+// Handle form submission to add a new user
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Safely retrieve form values using null coalescing operator
+    $username = $_POST['username'] ?? null;
+    $firstname = $_POST['firstname'] ?? null;
+    $lastname = $_POST['lastname'] ?? null;
+    $email = $_POST['email'] ?? null;
+    $phone = $_POST['phone'] ?? null;
+    $password = isset($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : null; // Hash the password
+
+    // Check for null values before proceeding
+    if ($username && $firstname && $lastname && $email && $phone && $password) {
+        // Insert the user into the database
+        $stmt = $conn->prepare("INSERT INTO users (username, firstname, lastname, email, phone, password) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $username, $firstname, $lastname, $email, $phone, $password);
+
+        if ($stmt->execute()) {
+            echo "<p style='color: green; text-align: center;'>Sign-up successful! You can now log in.</p>";
+        } else {
+            echo "<p style='color: red; text-align: center;'>Error: " . $stmt->error . "</p>";
+        }
+
+        $stmt->close();
+    } else {
+        echo "<p style='color: red; text-align: center;'>Please fill out all required fields.</p>";
+    }
 }
 
-// Initialize show_users session variable if it's not already set (default to false)
+// Handle show/hide users toggle
 if (!isset($_SESSION['show_users'])) {
     $_SESSION['show_users'] = false;
 }
 
-// Handle form submission to add a new user
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'])) {
-    $newUser = [
-        'username' => htmlspecialchars($_POST['username']),
-        'firstname' => htmlspecialchars($_POST['firstname']),
-        'lastname' => htmlspecialchars($_POST['lastname']),
-        'email' => htmlspecialchars($_POST['email']),
-        'phone' => htmlspecialchars($_POST['phone']),
-        'password' => htmlspecialchars($_POST['password']),
-        'failed_attempts' => 0
-    ];
-
-    // Find the first empty spot in the array to insert the new user
-    for ($i = 0; $i < 10; $i++) {
-        if ($_SESSION['users'][$i] === null) {
-            $_SESSION['users'][$i] = $newUser;
-            break;
-        }
-    }
-
-    // Redirect to prevent form resubmission
-    header("Location: " . htmlspecialchars($_SERVER['PHP_SELF']));
-    exit();
-}
-
-// Remove null entries and sort users by first name
-$sortedUsers = array_filter($_SESSION['users']); // Remove null values
-usort($sortedUsers, function ($a, $b) {
-    return strcmp($a['firstname'], $b['firstname']);
-});
-
-// Toggle show/hide users list based on session state
 if (isset($_POST['show_users'])) {
     $_SESSION['show_users'] = !$_SESSION['show_users'];  // Toggle visibility
 }
 
-// Check if users' list should be shown
 $showUsers = $_SESSION['show_users'];
+
+// Initialize the users array to avoid undefined variable warnings
+$sortedUsers = [];
+
+// Query the database for all users if $showUsers is true
+if ($showUsers) {
+    $result = $conn->query("SELECT username, firstname, lastname, email, phone FROM users ORDER BY firstname ASC");
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $sortedUsers[] = $row;
+        }
+    }
+}
+
+// Close the connection after all operations
+$conn->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">

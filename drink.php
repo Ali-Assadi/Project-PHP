@@ -1,30 +1,15 @@
 <?php
-// Define paths for resources
-$photosPath = "photos/drinks_images/";
+include "db_products.php"; // Use the new products database connection
 
-// Create PHP array of drink products with explicit image paths
-$products = [
-    ['id' => 1, 'name' => 'Coca Cola', 'price' => 7, 'path' => 'Coca Cola.jpg'],
-    ['id' => 2, 'name' => 'Fanta Orange', 'price' => 7, 'path' => 'Fanta Orange.jpg'],
-    ['id' => 3, 'name' => 'Sprite Extreme', 'price' => 8, 'path' => 'Sprite Extreme.jpg'],
-    ['id' => 4, 'name' => 'Fanta Strawberry Kiwi', 'price' => 10, 'path' => 'Fanta Strawberry Kiwi.jpg'],
-    ['id' => 5, 'name' => 'Sprite Zero', 'price' => 7, 'path' => 'Sprite Zero.jpg'],
-    ['id' => 6, 'name' => 'Coca Cola Zero', 'price' => 7, 'path' => 'Coca Cola Zero.jpg'],
-    ['id' => 7, 'name' => 'Chocolate Ice Vanil', 'price' => 10, 'path' => 'Chocolate Ice Vanil.jpg'],
-    ['id' => 8, 'name' => 'Chocolate Milk', 'price' => 10, 'path' => 'Chocolate Milk.jpg'],
-    ['id' => 9, 'name' => 'Ice Vanil', 'price' => 10, 'path' => 'Ice Vanil.jpg'],
-    ['id' => 10, 'name' => 'Kabitchino', 'price' => 6, 'path' => 'Kabitchino.jpg'],
-    ['id' => 11, 'name' => 'Lateh', 'price' => 8, 'path' => 'Lateh.jpg'],
-    ['id' => 12, 'name' => 'Espresso', 'price' => 5, 'path' => 'Espresso.jpg'],
-    ['id' => 13, 'name' => 'Dark Chocolate', 'price' => 15, 'path' => 'Dark Chocolate.jpg'],
-    ['id' => 14, 'name' => 'Arabic Caffe', 'price' => 12, 'path' => 'Arabic Caffe.jpg'],
-    ['id' => 15, 'name' => 'Tea', 'price' => 5, 'path' => 'Tea.jpg'],
-    ['id' => 16, 'name' => 'Lemon Juice', 'price' => 7, 'path' => 'Lemon Jucie.jpg'],
-    ['id' => 17, 'name' => 'Orange Juice', 'price' => 10, 'path' => 'Orange Jucie.jpg'],
-    ['id' => 18, 'name' => 'Strawberry Juice', 'price' => 15, 'path' => 'Strawberry Jucie.jpg'],
-];
+// Fetch all products from the database
+$photosPath = "photos/drinks_images/"; // Path to your images folder
+$stmt = $conn->prepare("SELECT id, name, price, path FROM products");
+$stmt->execute();
+$result = $stmt->get_result();
+$products = $result->fetch_all(MYSQLI_ASSOC);
 
-// HTML structure for displaying drinks
+$stmt->close();
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
