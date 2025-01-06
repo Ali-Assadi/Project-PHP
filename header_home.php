@@ -1,18 +1,6 @@
-<?php
-// Start the session only if it hasn't already been started
-if (session_status() == PHP_SESSION_NONE) {
-    session_start(); // Start the session if not already started
-}
-
-// Now you can safely access the session and the user data
-if (isset($_SESSION['user'])) {
-    $user = $_SESSION['user'];
-}
-?>
-
 <header class="header" style="background: linear-gradient(-135deg, rgb(63, 63, 63), rgb(182, 165, 132));">
     <!-- My Account Button -->
-    <?php if (isset($user)): ?>
+    <?php if (isset($_SESSION['username'])): ?>
         <div style="position: relative; right:20px; text-align: right;">
             <!-- Greeting with User's Name -->
             <button class="button" onclick="toggleAccountDetails()">My Account</button>
@@ -46,9 +34,6 @@ if (isset($_SESSION['user'])) {
     <!-- Navbar Background Image on Right -->
     <img src="<?= $imagesPath ?>navBarBackground.png" id="right" style="max-width:250px; max-height:250px; margin-right: 420px;"/>
 </header>
-
-
-
 
 <script>
 function toggleAccountDetails() {

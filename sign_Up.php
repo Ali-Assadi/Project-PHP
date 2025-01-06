@@ -14,14 +14,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Check for null values before proceeding
     if ($username && $firstname && $lastname && $email && $phone && $password) {
-        // Insert the user into the database
-        $stmt = $conn->prepare("INSERT INTO users (username, firstname, lastname, email, phone, password) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $username, $firstname, $lastname, $email, $phone, $password);
-
-        if ($stmt->execute()) {
-            echo "<p style='color: green; text-align: center;'>Sign-up successful! You can now log in.</p>";
+        // Check if the username already exists
+        $stmt = $conn->prepare("SELECT username FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $stmt->store_result();
+        
+        if ($stmt->num_rows > 0) {
+            // Username already exists, display an error message
+            echo "<p style='color: red; text-align: center;'>Error: The username is already taken. Please choose a different one.</p>";
         } else {
-            echo "<p style='color: red; text-align: center;'>Error: " . $stmt->error . "</p>";
+            // Insert the user into the database if username doesn't exist
+            $stmt = $conn->prepare("INSERT INTO users (username, firstname, lastname, email, phone, password) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssss", $username, $firstname, $lastname, $email, $phone, $password);
+
+            if ($stmt->execute()) {
+                echo "<p style='color: green; text-align: center;'>Sign-up successful! You can now log in.</p>";
+            } else {
+                echo "<p style='color: red; text-align: center;'>Error: " . $stmt->error . "</p>";
+            }
         }
 
         $stmt->close();
@@ -60,6 +71,7 @@ $conn->close();
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,7 +89,7 @@ $conn->close();
         }
 
         .container {
-            width: 530px;
+            width: 560px;
             margin: 0 auto;
             margin-top: 100px;
             margin-bottom: 18px;

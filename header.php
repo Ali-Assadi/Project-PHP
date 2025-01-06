@@ -22,6 +22,9 @@ $imagesPath = "photos/index_images/";
     
     <!-- Navbar Background Image on Right -->
     <img src="<?= $imagesPath ?>navBarBackground.png" id="right" style="max-width:250px; max-height:250px; margin-right: 420px;"/>
+    <a href="cart.php" target="main" class="button" style="position: relative; right:60px;">
+        Cart
+    </a>
 </header>
 <style>
     /* Buttons */

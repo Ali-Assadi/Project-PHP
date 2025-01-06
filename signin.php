@@ -6,60 +6,99 @@ include "db_config.php"; // Include the database connection
 $lockMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Safely retrieve username and password from POST
-    $username = $_POST['username'] ?? null;
-    $password = $_POST['password'] ?? null;
+    if (isset($_POST['signin'])) {
+        // Handle Sign-In
+        $username = $_POST['username'] ?? null;
+        $password = $_POST['password'] ?? null;
 
-    if ($username && $password) {
-        // Query to fetch the user from the database
-        $stmt = $conn->prepare("SELECT id, password, failed_attempts FROM users WHERE username = ?");
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        if ($username && $password) {
+            // Query to fetch the user from the database
+            $stmt = $conn->prepare("SELECT id, password, failed_attempts, temp_password FROM users WHERE username = ?");
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        if ($result && $result->num_rows > 0) {
-            $user = $result->fetch_assoc();
+            if ($result && $result->num_rows > 0) {
+                $user = $result->fetch_assoc();
 
-            // Check if the account is locked
-            if ($user['failed_attempts'] >= 3) {
-                $lockMessage = "Your account is locked due to too many failed attempts. Please contact support.";
-            } else {
-                // Verify the password
-                if (password_verify($password, $user['password'])) {
-                    // Reset failed attempts on successful login
-                    $resetStmt = $conn->prepare("UPDATE users SET failed_attempts = 0 WHERE id = ?");
-                    $resetStmt->bind_param("i", $user['id']);
-                    $resetStmt->execute();
+                // Lock the account if failed attempts >= 3
+                if ($user['failed_attempts'] >= 3) {
+                    // Set the password to NULL after 3 failed attempts
+                    $stmtUpdate = $conn->prepare("UPDATE users SET password = NULL WHERE id = ?");
+                    $stmtUpdate->bind_param("i", $user['id']);
+                    $stmtUpdate->execute();
 
-                    // Set session variables
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['username'] = $username;
-
-                    // Redirect to a welcome page or dashboard
-                    header("Location: welcome.php");
-                    exit();
+                    $lockMessage = "Your account is locked due to too many failed attempts. Please reset your password.";
                 } else {
-                    // Increment failed attempts
-                    $incrementStmt = $conn->prepare("UPDATE users SET failed_attempts = failed_attempts + 1 WHERE id = ?");
-                    $incrementStmt->bind_param("i", $user['id']);
-                    $incrementStmt->execute();
+                    // Check if password matches the stored password (either the original password or temporary password)
+                    if (
+                        password_verify($password, $user['password']) ||  // Check for the original password
+                        (isset($user['temp_password']) && password_verify($password, $user['temp_password']))  // Check for the temporary password
+                    ) {
+                        // If the temp password is used, set the temp password session flag
+                        if (isset($user['temp_password']) && password_verify($password, $user['temp_password'])) {
+                            $_SESSION['temp_password'] = true; // Temporary password flag
+                        }
 
-                    echo "<p style='color: red; text-align: center;'>Invalid password. Please try again.</p>";
+                        // Reset failed attempts
+                        $resetStmt = $conn->prepare("UPDATE users SET failed_attempts = 0 WHERE id = ?");
+                        $resetStmt->bind_param("i", $user['id']);
+                        $resetStmt->execute();
+
+                        // Set session variables
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['username'] = $username;
+
+                        // Redirect to home.php after successful login using window.top.location.href
+                        echo "<script>window.top.location.href = 'home.php';</script>";
+                        exit(); // Stop script execution to ensure redirect happens
+                    } else {
+                        // Increment failed attempts on invalid login
+                        $incrementStmt = $conn->prepare("UPDATE users SET failed_attempts = failed_attempts + 1 WHERE id = ?");
+                        $incrementStmt->bind_param("i", $user['id']);
+                        $incrementStmt->execute();
+
+                        echo "<p style='color: red; text-align: center;'>Invalid password. Please try again.</p>";
+                    }
                 }
+            } else {
+                echo "<p style='color: red; text-align: center;'>No user found with the username provided.</p>";
             }
+            $stmt->close();
         } else {
-            echo "<p style='color: red; text-align: center;'>No user found with the username provided.</p>";
+            echo "<p style='color: red; text-align: center;'>Please enter both username and password.</p>";
         }
+    } elseif (isset($_POST['forgotPassword'])) {
+        // Handle Forgot Password
+        $username = $_POST['username'] ?? null;
 
-        $stmt->close();
-    } else {
-        echo "<p style='color: red; text-align: center;'>Please enter both username and password.</p>";
+        if ($username) {
+            // Generate a random temporary password
+            $tempPassword = bin2hex(random_bytes(4)); // 8-character random string
+            $hashedTempPassword = password_hash($tempPassword, PASSWORD_DEFAULT); // Hash the temp password
+
+            // Update the user in the database with the new temporary password
+            $stmt = $conn->prepare("UPDATE users SET temp_password = ?, failed_attempts = 0 WHERE username = ?");
+            $stmt->bind_param("ss", $hashedTempPassword, $username);
+            $stmt->execute();
+
+            if ($stmt->affected_rows > 0) {
+                echo "<p style='color: green; text-align: center;'>A temporary password has been generated: $tempPassword</p>";
+                echo "<p style='color: green; text-align: center;'>Use this password to log in and update it.</p>";
+            } else {
+                echo "<p style='color: red; text-align: center;'>No user found with the username provided.</p>";
+            }
+            $stmt->close();
+        } else {
+            echo "<p style='color: red; text-align: center;'>Please enter your username.</p>";
+        }
     }
 }
 
 // Close the database connection
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -86,30 +125,28 @@ $conn->close();
 
             <!-- Forgot Password Section -->
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" style="margin-top: 20px;">
-    <!-- Default "Forgot your password?" text -->
-    <span id="forgotPasswordText" onclick="toggleForgotPasswordForm()" style="color: black; cursor: pointer;">Forgot your password?</span>
+                <!-- Default "Forgot your password?" text -->
+                <span id="forgotPasswordText" onclick="toggleForgotPasswordForm()" style="color: black; cursor: pointer;">Forgot your password?</span>
 
-    <!-- Hidden form (initially hidden) to input username and reset password -->
-    <div id="forgotPasswordForm" style="display: none;">
-        <br />
-        <label for="forgotUsername" style="color: black;">Enter your username:</label>
-        <input type="text" id="forgotUsername" name="username" required placeholder="Username" />
-        <input type="submit" name="forgotPassword" value="Reset Password" />
-    </div>
-</form>
-<script>
-function toggleForgotPasswordForm() {
-    // Toggle the visibility of the form when the text is clicked
-    const form = document.getElementById('forgotPasswordForm');
-    form.style.display = form.style.display === 'block' ? 'none' : 'block';
+                <!-- Hidden form (initially hidden) to input username and reset password -->
+                <div id="forgotPasswordForm" style="display: none;">
+                    <br />
+                    <label for="forgotUsername" style="color: black;">Enter your username:</label>
+                    <input type="text" id="forgotUsername" name="username" required placeholder="Username" />
+                    <input type="submit" name="forgotPassword" value="Reset Password" />
+                </div>
+            </form>
+            <script>
+                function toggleForgotPasswordForm() {
+                    // Toggle the visibility of the form when the text is clicked
+                    const form = document.getElementById('forgotPasswordForm');
+                    form.style.display = form.style.display === 'block' ? 'none' : 'block';
 
-    // Toggle the text of the link
-    const text = document.getElementById('forgotPasswordText');
-    text.innerHTML = form.style.display === 'block' ? 'Hide Reset Password Form' : 'Forgot your password?';
-}
-</script>
-
-
+                    // Toggle the text of the link
+                    const text = document.getElementById('forgotPasswordText');
+                    text.innerHTML = form.style.display === 'block' ? 'Hide Reset Password Form' : 'Forgot your password?';
+                }
+            </script>
         </div>
     <?php endif; ?>
 </body>

@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Collect form data
     $name = htmlspecialchars(trim($_POST['name']));
     $phone = htmlspecialchars(trim($_POST['phone']));
+    $email = htmlspecialchars(trim($_POST['email']));
     $message = htmlspecialchars(trim($_POST['message']));
 
     // Validation
@@ -31,6 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Phone number must be exactly 10 digits (only numbers).";
     }
 
+    // Validate email (Ensure it's a valid email format)
+    if (empty($email)) {
+        $errors[] = "Email is required.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email format.";
+    }
+
     // Validate message (Ensure it's not empty)
     if (empty($message)) {
         $errors[] = "Message is required.";
@@ -39,12 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If there are no errors, process the form (e.g., save data to the database)
     if (empty($errors)) {
         // Prepare the SQL statement to insert data into the contact_us table
-        $stmt = $conn->prepare("INSERT INTO contact_us (name, phone, message) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO contact_us (name, phone, email, message) VALUES (?, ?, ?, ?)");
         if ($stmt === false) {
             die("Prepare failed: " . $conn->error);
         }
 
-        $stmt->bind_param("sss", $name, $phone, $message);
+        $stmt->bind_param("ssss", $name, $phone, $email, $message);
 
         // Execute the statement
         if ($stmt->execute()) {
@@ -61,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Close the database connection
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -294,46 +303,54 @@ a:hover {
         </ul>
     <?php endif; ?>
 
-    <!-- Contact Form Box -->
-    <div class="contact-form">
-        <h2>Send us a message</h2>
-        <form action="" method="post" id="contactForm">
-            <input type="text" name="name" placeholder="Your Name" id="name" required>
-            <input type="text" name="phone" placeholder="Your Phone Number" id="phone" required>
-            <textarea name="message" placeholder="Your Message" id="message" required></textarea>
-            <button type="submit" class="submit-btn">Submit</button>
-        </form>
-    </div>
+<!-- Contact Form Box -->
+<div class="contact-form">
+    <h2>Send us a message</h2>
+    <form action="" method="post" id="contactForm">
+        <input type="text" name="name" placeholder="Your Name" id="name" required>
+        <input type="text" name="phone" placeholder="Your Phone Number" id="phone" required>
+        <input type="email" name="email" placeholder="Your Email Address" id="email" required>
+        <textarea name="message" placeholder="Your Message" id="message" required></textarea>
+        <button type="submit" class="submit-btn">Submit</button>
+    </form>
+</div>
 
-    <script>
-        // Front-end validation using JavaScript
-        document.getElementById('contactForm').addEventListener('submit', function(event) {
-            let name = document.getElementById('name').value;
-            let phone = document.getElementById('phone').value;
-            let message = document.getElementById('message').value;
-            let errors = [];
+<script>
+    // Front-end validation using JavaScript
+    document.getElementById('contactForm').addEventListener('submit', function(event) {
+        let name = document.getElementById('name').value;
+        let phone = document.getElementById('phone').value;
+        let email = document.getElementById('email').value;
+        let message = document.getElementById('message').value;
+        let errors = [];
 
-            // Validate name (Ensure it's not empty and contains only letters and spaces)
-            if (!name.match(/^[a-zA-Z ]*$/)) {
-                errors.push("Name can only contain letters and spaces.");
-            }
+        // Validate name (Ensure it's not empty and contains only letters and spaces)
+        if (!name.match(/^[a-zA-Z ]*$/)) {
+            errors.push("Name can only contain letters and spaces.");
+        }
 
-            // Validate phone number (Ensure it's exactly 10 digits and only numbers)
-            if (!phone.match(/^\d{10}$/)) {
-                errors.push("Phone number must be exactly 10 digits (only numbers).");
-            }
+        // Validate phone number (Ensure it's exactly 10 digits and only numbers)
+        if (!phone.match(/^\d{10}$/)) {
+            errors.push("Phone number must be exactly 10 digits (only numbers).");
+        }
 
-            // Validate message (Ensure it's not empty)
-            if (message.trim() === "") {
-                errors.push("Message is required.");
-            }
+        // Validate email (Ensure it's a valid email format)
+        if (!email.match(/^\S+@\S+\.\S+$/)) {
+            errors.push("Invalid email format.");
+        }
 
-            // If there are errors, prevent form submission and alert the user
-            if (errors.length > 0) {
-                event.preventDefault();
-                alert(errors.join('\n'));
-            }
-        });
-    </script>
+        // Validate message (Ensure it's not empty)
+        if (message.trim() === "") {
+            errors.push("Message is required.");
+        }
+
+        // If there are errors, prevent form submission and alert the user
+        if (errors.length > 0) {
+            event.preventDefault();
+            alert(errors.join('\n'));
+        }
+    });
+</script>
+
 </body>
 </html>
