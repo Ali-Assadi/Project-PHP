@@ -1,20 +1,18 @@
 <?php
+// Enable error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Include the database connection file
 include "contact_usDBconfig.php"; // Use the same database connection file
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Collect form data
-    $name = htmlspecialchars($_POST['name']);
-    $phone = htmlspecialchars($_POST['phone']);
-    $message = htmlspecialchars($_POST['message']);
-
-    // Debugging: Print form data
-    echo "<pre>";
-    echo "Name: $name\n";
-    echo "Phone: $phone\n";
-    echo "Message: $message\n";
-    echo "</pre>";
+    $name = htmlspecialchars(trim($_POST['name']));
+    $phone = htmlspecialchars(trim($_POST['phone']));
+    $message = htmlspecialchars(trim($_POST['message']));
 
     // Validation
     $errors = [];
@@ -43,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Prepare the SQL statement to insert data into the contact_us table
         $stmt = $conn->prepare("INSERT INTO contact_us (name, phone, message) VALUES (?, ?, ?)");
         if ($stmt === false) {
-            die("Prepare failed: " . $conn->error); // Debugging: Check if prepare failed
+            die("Prepare failed: " . $conn->error);
         }
 
         $stmt->bind_param("sss", $name, $phone, $message);
@@ -51,26 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Execute the statement
         if ($stmt->execute()) {
             $form_success = "Thank you for contacting us! We will get back to you soon.";
-            echo "Data inserted successfully!<br>"; // Debugging: Confirm insertion
         } else {
             $errors[] = "An error occurred while submitting the form. Please try again.";
-            // Debugging: Print the SQL error
-            echo "SQL Error: " . $stmt->error;
         }
 
         // Close the statement
         $stmt->close();
-    } else {
-        // Debugging: Print validation errors
-        echo "<pre>";
-        print_r($errors);
-        echo "</pre>";
     }
 }
 
 // Close the database connection
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -288,16 +279,17 @@ a:hover {
         <img src="photos/contact-us_images/mailicon.png" class="icon">
         <br><br>
         <a href="mailto:name@name.com">name@name.com</a>
-        </p>
     </div>
 
     <!-- Display error messages or success message if form was submitted -->
     <?php if (isset($form_success)): ?>
-        <p style="color: green; text-align: center;"><?php echo $form_success; ?></p>
+        <p style="color: green; text-align: center;">
+            <?php echo htmlspecialchars($form_success); ?>
+        </p>
     <?php elseif (!empty($errors)): ?>
         <ul style="color: red; text-align: center;">
             <?php foreach ($errors as $error): ?>
-                <li><?php echo $error; ?></li>
+                <li><?php echo htmlspecialchars($error); ?></li>
             <?php endforeach; ?>
         </ul>
     <?php endif; ?>
@@ -305,7 +297,7 @@ a:hover {
     <!-- Contact Form Box -->
     <div class="contact-form">
         <h2>Send us a message</h2>
-        <form action="contact_us.php" method="post" id="contactForm">
+        <form action="" method="post" id="contactForm">
             <input type="text" name="name" placeholder="Your Name" id="name" required>
             <input type="text" name="phone" placeholder="Your Phone Number" id="phone" required>
             <textarea name="message" placeholder="Your Message" id="message" required></textarea>
@@ -340,15 +332,6 @@ a:hover {
             if (errors.length > 0) {
                 event.preventDefault();
                 alert(errors.join('\n'));
-            } else {
-                // If no errors, show a confirmation message
-                event.preventDefault(); // Prevent the default form submission for now
-
-                // Display a confirmation alert
-                alert("Thank you for contacting us! We will get back to you soon.");
-
-                // Redirect to the homepage (or any other URL)
-                window.top.location.href = "home.php"; // Replace with your homepage URL if needed
             }
         });
     </script>

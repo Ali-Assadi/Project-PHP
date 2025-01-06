@@ -1,8 +1,8 @@
 <?php
-$host = "localhost"; // Your database host
-$username = "root"; // Your MySQL username (default for most setups)
-$password = "1234"; // Your MySQL password (leave empty for XAMPP/MAMP)
-$dbname = "contact"; // The name of your database
+$host = "localhost";
+$username = "root";
+$password = "1234";
+$dbname = "contact";
 
 // Connect to the database
 $conn = new mysqli($host, $username, $password, $dbname);
@@ -10,7 +10,5 @@ $conn = new mysqli($host, $username, $password, $dbname);
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
-} else {
-    echo "Connected to the database successfully!<br>"; // Debugging: Confirm connection
 }
 ?>
