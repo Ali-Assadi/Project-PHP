@@ -1,42 +1,76 @@
 <?php
-// Handle form submission if needed
+// Include the database connection file
+include "contact_usDBconfig.php"; // Use the same database connection file
+
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // Collect form data
-  $name = htmlspecialchars($_POST['name']);
-  $phone = htmlspecialchars($_POST['phone']);
-  $message = htmlspecialchars($_POST['message']);
-  
-  // Validation
-  $errors = [];
-  
-  // Validate name (Ensure it's not empty and contains only letters and spaces)
-  if (empty($name)) {
-      $errors[] = "Name is required.";
-  } elseif (!preg_match("/^[a-zA-Z ]*$/", $name)) {
-      $errors[] = "Name can only contain letters and spaces.";
-  }
+    // Collect form data
+    $name = htmlspecialchars($_POST['name']);
+    $phone = htmlspecialchars($_POST['phone']);
+    $message = htmlspecialchars($_POST['message']);
 
-  // Validate phone number (Ensure it's exactly 10 digits)
-  if (empty($phone)) {
-      $errors[] = "Phone number is required.";
-  } elseif (!preg_match("/^\d{10}$/", $phone)) {
-      $errors[] = "Phone number must be exactly 10 digits (only numbers).";
-  }
+    // Debugging: Print form data
+    echo "<pre>";
+    echo "Name: $name\n";
+    echo "Phone: $phone\n";
+    echo "Message: $message\n";
+    echo "</pre>";
 
-  // Validate message (Ensure it's not empty)
-  if (empty($message)) {
-      $errors[] = "Message is required.";
-  }
+    // Validation
+    $errors = [];
 
-  // If there are no errors, process the form (e.g., send email, save data, etc.)
-  if (empty($errors)) {
-      // For now, just a success message
-      $form_success = true; // Mark the form as successfully submitted
-  }
+    // Validate name (Ensure it's not empty and contains only letters and spaces)
+    if (empty($name)) {
+        $errors[] = "Name is required.";
+    } elseif (!preg_match("/^[a-zA-Z ]*$/", $name)) {
+        $errors[] = "Name can only contain letters and spaces.";
+    }
+
+    // Validate phone number (Ensure it's exactly 10 digits)
+    if (empty($phone)) {
+        $errors[] = "Phone number is required.";
+    } elseif (!preg_match("/^\d{10}$/", $phone)) {
+        $errors[] = "Phone number must be exactly 10 digits (only numbers).";
+    }
+
+    // Validate message (Ensure it's not empty)
+    if (empty($message)) {
+        $errors[] = "Message is required.";
+    }
+
+    // If there are no errors, process the form (e.g., save data to the database)
+    if (empty($errors)) {
+        // Prepare the SQL statement to insert data into the contact_us table
+        $stmt = $conn->prepare("INSERT INTO contact_us (name, phone, message) VALUES (?, ?, ?)");
+        if ($stmt === false) {
+            die("Prepare failed: " . $conn->error); // Debugging: Check if prepare failed
+        }
+
+        $stmt->bind_param("sss", $name, $phone, $message);
+
+        // Execute the statement
+        if ($stmt->execute()) {
+            $form_success = "Thank you for contacting us! We will get back to you soon.";
+            echo "Data inserted successfully!<br>"; // Debugging: Confirm insertion
+        } else {
+            $errors[] = "An error occurred while submitting the form. Please try again.";
+            // Debugging: Print the SQL error
+            echo "SQL Error: " . $stmt->error;
+        }
+
+        // Close the statement
+        $stmt->close();
+    } else {
+        // Debugging: Print validation errors
+        echo "<pre>";
+        print_r($errors);
+        echo "</pre>";
+    }
 }
 
+// Close the database connection
+$conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -233,7 +267,7 @@ a:hover {
 }
 
 
-    </style>
+  </style>
 </head>
 <body>
     <div class="contact">
@@ -280,44 +314,43 @@ a:hover {
     </div>
 
     <script>
-// Front-end validation using JavaScript
-document.getElementById('contactForm').addEventListener('submit', function(event) {
-    let name = document.getElementById('name').value;
-    let phone = document.getElementById('phone').value;
-    let message = document.getElementById('message').value;
-    let errors = [];
+        // Front-end validation using JavaScript
+        document.getElementById('contactForm').addEventListener('submit', function(event) {
+            let name = document.getElementById('name').value;
+            let phone = document.getElementById('phone').value;
+            let message = document.getElementById('message').value;
+            let errors = [];
 
-    // Validate name (Ensure it's not empty and contains only letters and spaces)
-    if (!name.match(/^[a-zA-Z ]*$/)) {
-        errors.push("Name can only contain letters and spaces.");
-    }
+            // Validate name (Ensure it's not empty and contains only letters and spaces)
+            if (!name.match(/^[a-zA-Z ]*$/)) {
+                errors.push("Name can only contain letters and spaces.");
+            }
 
-    // Validate phone number (Ensure it's exactly 10 digits and only numbers)
-    if (!phone.match(/^\d{10}$/)) {
-        errors.push("Phone number must be exactly 10 digits (only numbers).");
-    }
+            // Validate phone number (Ensure it's exactly 10 digits and only numbers)
+            if (!phone.match(/^\d{10}$/)) {
+                errors.push("Phone number must be exactly 10 digits (only numbers).");
+            }
 
-    // Validate message (Ensure it's not empty)
-    if (message.trim() === "") {
-        errors.push("Message is required.");
-    }
+            // Validate message (Ensure it's not empty)
+            if (message.trim() === "") {
+                errors.push("Message is required.");
+            }
 
-    // If there are errors, prevent form submission and alert the user
-    if (errors.length > 0) {
-        event.preventDefault();
-        alert(errors.join('\n'));
-    } else {
-        // If no errors, show a confirmation message
-        event.preventDefault(); // Prevent the default form submission for now
+            // If there are errors, prevent form submission and alert the user
+            if (errors.length > 0) {
+                event.preventDefault();
+                alert(errors.join('\n'));
+            } else {
+                // If no errors, show a confirmation message
+                event.preventDefault(); // Prevent the default form submission for now
 
-        // Display a confirmation alert
-        alert("Thank you for contacting us! We will get back to you soon.");
+                // Display a confirmation alert
+                alert("Thank you for contacting us! We will get back to you soon.");
 
-        // Redirect to the homepage (or any other URL)
-        window.top.location.href = "home.php"; // Replace with your homepage URL if needed
-    }
-});
-
+                // Redirect to the homepage (or any other URL)
+                window.top.location.href = "home.php"; // Replace with your homepage URL if needed
+            }
+        });
     </script>
 </body>
 </html>
