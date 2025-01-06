@@ -1,16 +1,40 @@
 <?php
 // Handle form submission if needed
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Collect form data
-    $name = htmlspecialchars($_POST['name']);
-    $phone = htmlspecialchars($_POST['phone']);
-    $message = htmlspecialchars($_POST['message']);
-    
-    // You can now process or store this data as needed
-    // Example: sending an email, saving to a database, etc.
-    // For now, just a success message
-    $form_success = "Thank you for contacting us, we will get back to you soon!";
+  // Collect form data
+  $name = htmlspecialchars($_POST['name']);
+  $phone = htmlspecialchars($_POST['phone']);
+  $message = htmlspecialchars($_POST['message']);
+  
+  // Validation
+  $errors = [];
+  
+  // Validate name (Ensure it's not empty and contains only letters and spaces)
+  if (empty($name)) {
+      $errors[] = "Name is required.";
+  } elseif (!preg_match("/^[a-zA-Z ]*$/", $name)) {
+      $errors[] = "Name can only contain letters and spaces.";
+  }
+
+  // Validate phone number (Ensure it's exactly 10 digits)
+  if (empty($phone)) {
+      $errors[] = "Phone number is required.";
+  } elseif (!preg_match("/^\d{10}$/", $phone)) {
+      $errors[] = "Phone number must be exactly 10 digits (only numbers).";
+  }
+
+  // Validate message (Ensure it's not empty)
+  if (empty($message)) {
+      $errors[] = "Message is required.";
+  }
+
+  // If there are no errors, process the form (e.g., send email, save data, etc.)
+  if (empty($errors)) {
+      // For now, just a success message
+      $form_success = true; // Mark the form as successfully submitted
+  }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -18,57 +42,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css_files/contact_us.css">
     <title>Contact Us</title>
-</head>
-<body>
-    <div class="contact">
-        <h3>How can we help you?</h3>
-        <h1>Contact Us</h1>
-        <p>We're here to help and answer any questions you might have.<br>
-        We look forward to hearing from you!</p>
-        <img src="photos/contact-us_images/hallo.png" class="contact-img" style="width: 400px; float: right;">
-        <br>
-        <img src="photos/contact-us_images/placeicon.jpg" class="icon">
-        <br><br>
-        <a href="https://maps.app.goo.gl/yToY4GeEwLhoiwpPA"> Karmiel, OrtBraude</a>
-        <br><br>
-        <img src="photos/contact-us_images/phoneicon.png" class="icon">
-        <br><br>
-        <a href="04-20111000">04-20111000</a>
-        <br><br>
-        <img src="photos/contact-us_images/mailicon.png" class="icon">
-        <br><br>
-        <a href="name@name.com">name@name.com</a>
-        </p>
-    </div>
-    
-    <!-- Display success message if form was submitted -->
-    <?php if (isset($form_success)): ?>
-        <p style="color: green; text-align: center;"><?php echo $form_success; ?></p>
-    <?php endif; ?>
-
-    <!-- Contact Form Box -->
-    <div class="contact-form">
-        <h2>Send us a message</h2>
-        <form action="contact_us.php" method="post">
-            <input type="text" name="name" placeholder="Your Name" required>
-            <input type="text" name="phone" placeholder="Your Phone Number" required>
-            <textarea name="message" placeholder="Your Message" required></textarea>
-            <button type="submit" class="submit-btn">Submit</button>
-        </form>
-    </div>
-
-</body>
-</html>
-
-<style>
+    <style>
+    * Body Scrollbar Styling */
 body {
   background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
   margin-left: 50px;
   margin-top: 10px;
-  padding-bottom: 380px;
-  overflow: hidden;
+  overflow-y: scroll; /* Ensure scroll is visible when content exceeds */
+}
+
+body::-webkit-scrollbar {
+  width: 12px; /* Scrollbar width */
+}
+
+body::-webkit-scrollbar-track {
+  background: rgba(104, 93, 61, 0.2); /* Track background */
+  border-radius: 10px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: rgb(104, 93, 61); /* Thumb color */
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.6); /* Space around thumb */
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgb(63, 58, 42); /* Darker thumb on hover */
+}
+
+/* Contact Form Scrollbar Styling */
+.contact-form {
+  position: relative;
+  right: 34%;
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 30px auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
+  overflow-y: auto; /* Enable scrolling if content exceeds form box */
+  max-height: 500px; /* Set a max height for the form box */
+}
+
+.contact-form::-webkit-scrollbar {
+  width: 10px; /* Scrollbar width for form */
+}
+
+.contact-form::-webkit-scrollbar-track {
+  background: rgba(104, 93, 61, 0.1); /* Track background */
+  border-radius: 10px;
+}
+
+.contact-form::-webkit-scrollbar-thumb {
+  background: rgb(63, 58, 42); /* Thumb color for contact form */
+  border-radius: 10px;
+}
+
+.contact-form::-webkit-scrollbar-thumb:hover {
+  background: rgb(104, 93, 61); /* Darker thumb on hover */
+}
+
+/* Smooth scrolling behavior */
+html {
+  scroll-behavior: smooth; /* Smooth scroll effect */
+}
+
+/* Custom Scrollbars for All Browsers */
+* {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgb(104, 93, 61) rgba(104, 93, 61, 0.2); /* Firefox */
+}
+
+/* Base styles */
+body {
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  margin-left: 50px;
+  margin-top: 10px;
 }
 
 img {
@@ -94,12 +145,6 @@ a:hover {
   scale: 1.1;
 }
 
-@media screen and (max-width: 540px) {
-  img {
-    display: none;
-  }
-}
-
 .contact p {
   font-size: large;
 }
@@ -114,58 +159,165 @@ a:hover {
   width: 20px;
 }
 
-/* Styles for Contact Form */
+/* Contact Form Styling */
 .contact-form {
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 20px;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 500px;
-    margin-top: 40px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  right: 34%;
+  background: linear-gradient(-135deg, rgb(104, 93, 61), wheat);
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 30px auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
 }
 
 .contact-form h2 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    text-align: center;
+  text-align: center;
+  color: rgb(63, 58, 42);
+  margin-bottom: 20px;
 }
 
 .contact-form input,
 .contact-form textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 1rem;
+  width: 95%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 5px;
+  background: rgba(212, 212, 212, 0.9);
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
 }
 
-.contact-form input[type="text"],
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border: 2px solid rgb(104, 93, 61);
+  box-shadow: 0px 0px 5px rgb(104, 93, 61);
+}
+
 .contact-form textarea {
-    resize: vertical;
+  resize: vertical;
+  min-height: 100px;
 }
 
-.contact-form button {
-    width: 100%;
-    padding: 12px;
-    background-color: wheat;
-    color: black;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    cursor: pointer;
+.submit-btn {
+  width: 100%;
+  padding: 10px;
+  background: rgb(63, 58, 42);
+  color: wheat;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
-.contact-form button:hover {
-    background-color: #4cae4c;
+.submit-btn:hover {
+  background: rgb(104, 93, 61);
+  transform: scale(1.05);
 }
 
-/* Responsive adjustments */
-@media screen and (max-width: 600px) {
-    .contact-form {
-        width: 90%;
+/* Responsive Design */
+@media screen and (max-width: 540px) {
+  img {
+    display: none;
+  }
+
+  .contact-form {
+    width: 90%;
+  }
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="contact">
+        <h3>How can we help you?</h3>
+        <h1>Contact Us</h1>
+        <p>We're here to help and answer any questions you might have.<br>
+        We look forward to hearing from you!</p>
+        <img src="photos/contact-us_images/hallo.png" class="contact-img" style="width: 400px; float: right;">
+        <br>
+        <img src="photos/contact-us_images/placeicon.jpg" class="icon">
+        <br><br>
+        <a href="https://maps.app.goo.gl/yToY4GeEwLhoiwpPA"> Karmiel, OrtBraude</a>
+        <br><br>
+        <img src="photos/contact-us_images/phoneicon.png" class="icon">
+        <br><br>
+        <a href="tel:04-20111000">04-20111000</a>
+        <br><br>
+        <img src="photos/contact-us_images/mailicon.png" class="icon">
+        <br><br>
+        <a href="mailto:name@name.com">name@name.com</a>
+        </p>
+    </div>
+
+    <!-- Display error messages or success message if form was submitted -->
+    <?php if (isset($form_success)): ?>
+        <p style="color: green; text-align: center;"><?php echo $form_success; ?></p>
+    <?php elseif (!empty($errors)): ?>
+        <ul style="color: red; text-align: center;">
+            <?php foreach ($errors as $error): ?>
+                <li><?php echo $error; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+
+    <!-- Contact Form Box -->
+    <div class="contact-form">
+        <h2>Send us a message</h2>
+        <form action="contact_us.php" method="post" id="contactForm">
+            <input type="text" name="name" placeholder="Your Name" id="name" required>
+            <input type="text" name="phone" placeholder="Your Phone Number" id="phone" required>
+            <textarea name="message" placeholder="Your Message" id="message" required></textarea>
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+    </div>
+
+    <script>
+// Front-end validation using JavaScript
+document.getElementById('contactForm').addEventListener('submit', function(event) {
+    let name = document.getElementById('name').value;
+    let phone = document.getElementById('phone').value;
+    let message = document.getElementById('message').value;
+    let errors = [];
+
+    // Validate name (Ensure it's not empty and contains only letters and spaces)
+    if (!name.match(/^[a-zA-Z ]*$/)) {
+        errors.push("Name can only contain letters and spaces.");
     }
-}
-</style>
+
+    // Validate phone number (Ensure it's exactly 10 digits and only numbers)
+    if (!phone.match(/^\d{10}$/)) {
+        errors.push("Phone number must be exactly 10 digits (only numbers).");
+    }
+
+    // Validate message (Ensure it's not empty)
+    if (message.trim() === "") {
+        errors.push("Message is required.");
+    }
+
+    // If there are errors, prevent form submission and alert the user
+    if (errors.length > 0) {
+        event.preventDefault();
+        alert(errors.join('\n'));
+    } else {
+        // If no errors, show a confirmation message
+        event.preventDefault(); // Prevent the default form submission for now
+
+        // Display a confirmation alert
+        alert("Thank you for contacting us! We will get back to you soon.");
+
+        // Redirect to the homepage (or any other URL)
+        window.top.location.href = "home.php"; // Replace with your homepage URL if needed
+    }
+});
+
+    </script>
+</body>
+</html>

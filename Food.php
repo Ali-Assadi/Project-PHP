@@ -1,340 +1,215 @@
 <?php
-// Define paths for resources
-$photosPath = "photos/food_images/";
-$cssPath = "css_files/product.css";
-$jsPath = "javascript_files/product.js";
-?>
+include "db_products.php"; // Use the new products database connection
 
+// Fetch all products from the database
+$photosPath = "photos/food_images/"; // Path to your images folder
+$stmt = $conn->prepare("SELECT id, name, price, path, kind FROM products"); // Ensure 'kind' is selected
+$stmt->execute();
+$result = $stmt->get_result();
+$products = $result->fetch_all(MYSQLI_ASSOC);
+
+$stmt->close();
+$conn->close();
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="<?= $jsPath ?>"></script>
-    <link rel="stylesheet" type="text/css" href="<?= $cssPath ?>" />
+    <link rel="stylesheet" type="text/css" href="css_files/product.css" />
     <title>Food Menu</title>
+ <style>
+        /* General Flexbox Layout for Food, Drinks, Ice-Cream */
+        .food,
+        .drink,
+        .ice-cream {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Styling Each Item Container */
+        .item {
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.7); /* Slight transparency */
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            height: 400px;
+            text-align: center;
+            padding: 20px 10px; /* Increase padding to give space for tooltip */
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px); /* Adding blur effect behind the items */
+        }
+
+        /* Adjust image styling (optional) */
+        img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10%;
+            filter: grayscale(40%);
+            transition: transform 0.7s ease, filter 0.7s ease;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        img:hover {
+            transform: scale(0.95);
+            filter: grayscale(0%);
+        }
+
+        /* Tooltip Styling */
+        .tooltip {
+            position: absolute;
+            bottom: 10px; /* Adjust position to ensure tooltip doesn't go below the item */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: nowrap;
+            z-index: 999;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0s 0.3s;
+            border: 1px solid rgb(172, 156, 120);
+        }
+
+        .item:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+            transition-delay: 0s;
+        }
+
+        /* Form and Button Styling */
+        form {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Modern look for the select element */
+        select {
+            padding: 10px;
+            width: 50%; /* Adjust width as needed */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0; /* Light background color */
+            color: #333; /* Text color */
+            font-size: 16px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        select:focus {
+            border-color: #5c5c5c; /* Darker border color on focus */
+            background-color: #e8e8e8; /* Slightly darker background */
+        }
+
+        form select {
+            margin-bottom: 15px; /* Adjust the space between select and button */
+        }
+
+        button {
+            cursor: pointer;
+            background: linear-gradient(-135deg, rgb(46, 42, 28), rgb(82, 74, 61));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            width: 50%; /* Same width as select for consistency */
+        }
+
+        button:hover {
+            background: linear-gradient(-135deg, rgb(46, 42, 28), rgb(82, 74, 61));
+            transform: scale(1.05);
+        }
+
+        /* Page Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('photos/drinks_images/GoldBorderWallpaper.jpg');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-top: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-top: 40px;
+            color: #ccc;
+        }
+
+        label {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        select {
+            margin-top: 5px;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #f4f4f4;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 40%;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
   </head>
-  <body
-    style="background-image: url('<?= $photosPath ?>GoldBorderWallpaper.jpg');"
-  >
-  <div class="food">
-  <div class="item">
-    <img
-      src="photos/food_images/classic burger.jpg"
-      data-id="1"
-      data-name="Classic Burger"
-      data-price="40"
-      style="margin-left: 90px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 45px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/anotherBurger.jpg"
-      data-id="2"
-      data-name="Another Burger"
-      data-price="75"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 27px; margin-bottom: 140px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Yet Another Burger.jpg"
-      data-id="3"
-      data-name="Yet Another Burger"
-      data-price="100"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 35px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Chicken Burger.jpg"
-      data-id="4"
-      data-name="Chicken Burger"
-      data-price="40"
-      style="margin-left: 190px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/tortia.jpg"
-      data-id="5"
-      data-name="Mixed Tortia"
-      data-price="60"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Taco.jpg"
-      data-id="6"
-      data-name="Trible Taco"
-      data-price="60"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/HomePizza.jpg"
-      data-id="7"
-      data-name="Home Pizza"
-      data-price="40"
-      style="margin-left: 190px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/ClassicPizza.jpg"
-      data-id="8"
-      data-name="Classic Pizza"
-      data-price="65"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/italicpizza.jpg"
-      data-id="9"
-      data-name="Italic Pizza"
-      data-price="70"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Napilion Pizza.jpg"
-      data-id="10"
-      data-name="Napilion Pizza"
-      data-price="70"
-      style="margin-left: 190px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/shawrma.jpg"
-      data-id="11"
-      data-name="Shawrma"
-      data-price="50"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/baget1.jpg"
-      data-id="12"
-      data-name="Baget"
-      data-price="40"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Diet1.jpg"
-      data-id="13"
-      data-name="Diet meal 1"
-      data-price="45"
-      style="margin-left: 180px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/diet2.jpg"
-      data-id="14"
-      data-name="Diet meal 2"
-      data-price="45"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/Diet3.jpg"
-      data-id="15"
-      data-name="Diet meal 3"
-      data-price="45"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/fatosh.jpg"
-      data-id="16"
-      data-name="Fatosh Salad"
-      data-price="30"
-      style="margin-left: 185px; margin-top: 180px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 95px; margin-bottom: 250px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/ArabicSalad.jpg"
-      data-id="17"
-      data-name="Arabic Salad"
-      data-price="20"
-      style="margin-left: 60px; margin-top: 300px"
-    />
-    <div
-      class="tooltip"
-      style="margin-left: 30px; margin-bottom: 120px"
-    ></div>
-  </div>
-  <div class="item">
-    <img
-      src="photos/food_images/tabola.jpg"
-      data-id="18"
-      data-name="Tabola"
-      data-price="30"
-      style="margin-left: 60px; margin-top: 420px"
-    />
-    <div class="tooltip" style="margin-left: 25px"></div>
-  </div>
-</div>
-
-
-    <script>
-      class Product {
-        constructor(product_id, product_name, product_price) {
-          this.setProductId(product_id);
-          this.setProductName(product_name);
-          this.setProductPrice(product_price);
-        }
-
-        setProductId(product_id) {
-          const idRegex = /^[A-Za-z0-9-]+$/;
-          if (idRegex.test(product_id)) {
-            this.product_id = product_id;
-          } else {
-            throw new Error("Invalid product ID");
-          }
-        }
-
-        getProductId() {
-          return this.product_id;
-        }
-
-        setProductName(product_name) {
-          const nameRegex = /^[A-Za-z\s'-]+$/;
-          if (nameRegex.test(product_name)) {
-            this.product_name = product_name;
-          } else {
-            throw new Error("Invalid product name");
-          }
-        }
-
-        getProductName() {
-          return this.product_name;
-        }
-
-        setProductPrice(product_price) {
-          const priceRegex = /^\d+(\.\d{1,2})?$/;
-          if (priceRegex.test(product_price.toString())) {
-            this.product_price = parseFloat(product_price);
-          } else {
-            throw new Error("Invalid product price");
-          }
-        }
-
-        getProductPrice() {
-          return this.product_price;
-        }
-
-        toString() {
-          return `${this.product_name}, Price: ${this.product_price}₪`;
-        }
-
-        calculate_total_cost(quantity) {
-          return this.product_price * quantity;
-        }
-      }
-
-      function createProducts(...attributes) {
-        const items = document.querySelectorAll(".item img");
-        const products = [];
-
-        for (const item of items) {
-          const productData = {};
-          for (const attr of attributes) {
-            productData[attr] = item.getAttribute(`data-${attr}`);
-          }
-
-          try {
-            const product = new Product(
-              productData.id,
-              productData.name,
-              parseFloat(productData.price)
-            );
-            products.push(product);
-
-            const tooltip = item.nextElementSibling;
-            if (tooltip) {
-              tooltip.textContent = `${product.getProductName()}, Price: ${product.getProductPrice()}₪`;
-            }
-          } catch (error) {
-            console.error(`Error creating product: ${error.message}`);
-          }
-        }
-
-        return products;
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const products = createProducts("id", "name", "price");
-        console.log(products);
-
-        if (products.length > 0) {
-          const totalCost = products[0].calculate_total_cost(3);
-          console.log(
-            `Total cost for 3 units of ${products[0].getProductName()}: ${totalCost}₪`
-          );
-        }
-      });
-    </script>
-
+  <body>
+    <h1>Food Menu</h1>
+    <div class="food">
+      <?php foreach ($products as $product): ?>
+        <?php if (isset($product['kind']) && $product['kind'] == 2): ?> <!-- Check if 'kind' exists and equals 1 -->
+          <div class="item">
+            <img
+              src="photos/food_images/<?= $product['path'] ?>"
+              alt="<?= htmlspecialchars($product['name']) ?>"
+            />
+            <div class="tooltip">
+              <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>₪
+            </div>
+            <form method="POST">
+              <input type="hidden" name="productDetails" value="ID: <?= $product['id'] ?>, Name: <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>">
+              <button type="submit">Save Product</button>
+            </form>
+          </div>
+        <?php endif; ?>
+      <?php endforeach; ?>
+    </div>
   </body>
 </html>
