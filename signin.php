@@ -50,7 +50,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         $_SESSION['username'] = $username;
 
                         // Redirect to home.php after successful login using window.top.location.href
-                        echo "<script>window.top.location.href = 'home.php';</script>";
+                        // If user logged in with temp password, redirect to update password page
+                        if (isset($_SESSION['temp_password'])) {
+                            echo "<script>window.location.href = 'change_password.php';</script>";
+                        } else {
+                            echo "<script>window.top.location.href = 'home.php';</script>";
+                        }
                         exit(); // Stop script execution to ensure redirect happens
                     } else {
                         // Increment failed attempts on invalid login
@@ -78,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $hashedTempPassword = password_hash($tempPassword, PASSWORD_DEFAULT); // Hash the temp password
 
             // Update the user in the database with the new temporary password
-            $stmt = $conn->prepare("UPDATE users SET temp_password = ?, failed_attempts = 0 WHERE username = ?");
+            $stmt = $conn->prepare("UPDATE users SET password = NULL, temp_password = ?, failed_attempts = 0 WHERE username = ?");
             $stmt->bind_param("ss", $hashedTempPassword, $username);
             $stmt->execute();
 
@@ -98,6 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 // Close the database connection
 $conn->close();
 ?>
+
 
 
 <!DOCTYPE html>

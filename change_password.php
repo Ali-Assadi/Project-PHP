@@ -1,57 +1,77 @@
 <?php
 session_start();
-include "db_config.php"; // Include database connection
+include "db_config.php";
 
-// Ensure the user is logged in and logged in with a temporary password
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['temp_password'])) {
-    header("Location: signin.php");
+// Check if user is logged in and using a temporary password
+if (!isset($_SESSION['temp_password']) || !isset($_SESSION['user_id'])) {
+    header('Location: signin.php');
+    exit();
+}
+
+// Check if reset action is triggered
+if (isset($_POST['resetPassword'])) {
+    // Clear session and redirect to index.php
+    session_unset();  // Unset all session variables
+    session_destroy();  // Destroy the session
+    header('Location: index.php');  // Redirect to index.php
     exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $newPassword = $_POST['new_password'] ?? null;
-    $confirmPassword = $_POST['confirm_password'] ?? null;
+    $newPassword = $_POST['newPassword'] ?? null;
+    $confirmPassword = $_POST['confirmPassword'] ?? null;
 
     if ($newPassword && $confirmPassword) {
         if ($newPassword === $confirmPassword) {
+            // Hash the new password
             $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
             // Update the user's password in the database
-            $stmt = $conn->prepare("UPDATE users SET password = ?, temp_password = NULL, failed_attempts = 0 WHERE id = ?");
+            $stmt = $conn->prepare("UPDATE users SET password = ?, temp_password = NULL WHERE id = ?");
             $stmt->bind_param("si", $hashedPassword, $_SESSION['user_id']);
             $stmt->execute();
 
-            // Clear temp password flag
-            unset($_SESSION['temp_password']);
+            if ($stmt->affected_rows > 0) {
+                // Clear the temporary password session flag
+                unset($_SESSION['temp_password']);
+                
+                // JavaScript redirect after successful update
+                echo "<script type='text/javascript'>
+                        window.top.location.href = 'index.php';
+                      </script>";
+                exit();  // Exit to avoid further code execution
+            } else {
+                echo "<p style='color: red; text-align: center;'>Failed to update the password. Please try again.</p>";
+            }
 
-            echo "<p style='color: green; text-align: center;'>Password successfully updated. You can now log in with your new password.</p>";
-            header("Refresh: 3; URL=signin.php");
-            exit();
+            $stmt->close();
         } else {
             echo "<p style='color: red; text-align: center;'>Passwords do not match. Please try again.</p>";
         }
     } else {
-        echo "<p style='color: red; text-align: center;'>Please fill in both password fields.</p>";
+        echo "<p style='color: red; text-align: center;'>Please fill out all fields.</p>";
     }
 }
+
+$conn->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css_files/change_password.css">
-    <title>Change Password</title>
+    <link rel="stylesheet" href="css_files/change_password.css" />
+    <title>Update Password</title>
 </head>
 <body>
-    <div class="container">
-        <h2>Change Your Password</h2>
-        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
-            <input type="password" name="new_password" required placeholder="New Password" />
-            <input type="password" name="confirm_password" required placeholder="Confirm New Password" />
-            <input type="submit" value="Update Password" />
-        </form>
-    </div>
+    <h2>Update Your Password</h2>
+    <form method="POST">
+        <input type="password" name="newPassword" placeholder="New Password" required>
+        <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+        <input type="submit" value="Update Password">
+    </form>
 </body>
 </html>
