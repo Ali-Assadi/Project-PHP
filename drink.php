@@ -3,7 +3,7 @@ include "db_products.php"; // Use the new products database connection
 
 // Fetch all products from the database
 $photosPath = "photos/drinks_images/"; // Path to your images folder
-$stmt = $conn->prepare("SELECT id, name, price, path FROM products");
+$stmt = $conn->prepare("SELECT id, name, price, path, kind FROM products"); // Ensure 'kind' is selected
 $stmt->execute();
 $result = $stmt->get_result();
 $products = $result->fetch_all(MYSQLI_ASSOC);
@@ -18,7 +18,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css_files/product.css" />
     <title>Drink Menu</title>
-    <style>
+ <style>
         /* General Flexbox Layout for Food, Drinks, Ice-Cream */
         .food,
         .drink,
@@ -194,19 +194,21 @@ $conn->close();
     <h1>Drink Menu</h1>
     <div class="drink">
       <?php foreach ($products as $product): ?>
-        <div class="item">
-          <img
-            src="photos/drinks_images/<?= $product['path'] ?>"
-            alt="<?= htmlspecialchars($product['name']) ?>"
-          />
-          <div class="tooltip">
-            <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>₪
+        <?php if (isset($product['kind']) && $product['kind'] == 1): ?> <!-- Check if 'kind' exists and equals 1 -->
+          <div class="item">
+            <img
+              src="photos/drinks_images/<?= $product['path'] ?>"
+              alt="<?= htmlspecialchars($product['name']) ?>"
+            />
+            <div class="tooltip">
+              <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>₪
+            </div>
+            <form method="POST">
+              <input type="hidden" name="productDetails" value="ID: <?= $product['id'] ?>, Name: <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>">
+              <button type="submit">Save Product</button>
+            </form>
           </div>
-          <form method="POST">
-            <input type="hidden" name="productDetails" value="ID: <?= $product['id'] ?>, Name: <?= htmlspecialchars($product['name']) ?>, Price: <?= $product['price'] ?>">
-            <button type="submit">Save Product</button>
-          </form>
-        </div>
+        <?php endif; ?>
       <?php endforeach; ?>
     </div>
   </body>
